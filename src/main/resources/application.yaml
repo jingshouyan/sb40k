@@ -23,6 +23,7 @@ spring:
         format_sql: true
 
   security:
+    enable: false
     enable-csrf: false
     user:
       name: admin

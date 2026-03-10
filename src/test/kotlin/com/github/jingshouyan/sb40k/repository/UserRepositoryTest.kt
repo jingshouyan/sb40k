@@ -16,12 +16,16 @@ class UserRepositoryTest @Autowired constructor(val userRepository: UserReposito
             password = "password123",
             email = "abc@111.com"
         )
-        user = userRepository.saveAndFlush(user)
+        user = userRepository.save(user)
         assertEquals(user.version, 0L)
+        println("---------------------------")
         user.password = "newpassword"
-        user = userRepository.saveAndFlush(user)
+        user = userRepository.save(user)
         assertEquals(user.version, 1L)
-
+        println("---------------------------")
+        var ou = userRepository.findByUsername("testuser")
+        assertEquals(ou.isPresent, true)
+        userRepository.delete(ou.get())
     }
 
 

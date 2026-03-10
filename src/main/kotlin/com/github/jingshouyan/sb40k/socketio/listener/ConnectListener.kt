@@ -6,6 +6,7 @@ import com.corundumstudio.socketio.HandshakeData
 import com.corundumstudio.socketio.SocketIOClient
 import com.corundumstudio.socketio.listener.ConnectListener
 import com.corundumstudio.socketio.listener.DisconnectListener
+import com.github.jingshouyan.sb40k.socketio.cache.ConnectionInfo
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
@@ -35,6 +36,7 @@ class ConnListener : ConnectListener {
     private val log = LoggerFactory.getLogger(ConnListener::class.java)
 
     override fun onConnect(client: SocketIOClient?) {
+        client?.get<ConnectionInfo>("info")
         log.info("Client connected: ${client?.sessionId}@${client?.remoteAddress}")
     }
 }
