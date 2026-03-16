@@ -1,6 +1,7 @@
 package com.github.jingshouyan.sb40k.service.impl
 
 import com.github.jingshouyan.sb40k.base.BizException
+import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.base.RC
 import com.github.jingshouyan.sb40k.config.BizConfig
 import com.github.jingshouyan.sb40k.entity.User
@@ -31,8 +32,8 @@ class UserServiceImpl(
         val now = System.currentTimeMillis()
         var user: Optional<User> = Optional.empty()
         when (idType) {
-            ID_TYPE_USERNAME -> user = userRepo.findByUsername(id)
-            ID_TYPE_USERID -> user = userRepo.findById(id.toLong())
+            C.ID_TYPE_USERNAME -> user = userRepo.findByUsername(id)
+            C.ID_TYPE_USERID -> user = userRepo.findById(id.toLong())
         }
         if (user.isEmpty) throw BizException(RC.NOT_FOUND)
         val u = user.get()
@@ -64,9 +65,5 @@ class UserServiceImpl(
         throw BizException(RC.PASSWORD_INCORRECT, mapOf("tryCount" to u.tryCount))
     }
 
-    companion object {
-        const val ID_TYPE_USERID = 0
-        const val ID_TYPE_USERNAME = 1
 
-    }
 }
