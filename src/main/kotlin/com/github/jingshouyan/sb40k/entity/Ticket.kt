@@ -1,9 +1,8 @@
 package com.github.jingshouyan.sb40k.entity
 
 class Ticket(
-    val token: String,
-    val deviceType: Int,
+    val userId: Long,
+    val deviceType: Byte,
+    val ts: Long,
     val deviceId: String,
-    val expiredAt: Long,
-    val user: User,
 )

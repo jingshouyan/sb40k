@@ -14,7 +14,7 @@ class User(
     var username: String,
 
     @JsonIgnore
-    @Column(length = 50)
+    @Column(length = 100)
     var password: String,
 
     @Column(length = 100)
