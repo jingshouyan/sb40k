@@ -5,4 +5,8 @@ class Ticket(
     val deviceType: Byte,
     val ts: Long,
     val deviceId: String,
-)
+) {
+    override fun toString(): String {
+        return "Ticket(userId=$userId, deviceType=$deviceType, ts=$ts, deviceId='$deviceId')"
+    }
+}

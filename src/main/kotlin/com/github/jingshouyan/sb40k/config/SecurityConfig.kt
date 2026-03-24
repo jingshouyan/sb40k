@@ -1,6 +1,9 @@
 package com.github.jingshouyan.sb40k.config
 
 import com.github.jingshouyan.sb40k.filter.AuthFilter
+import com.github.jingshouyan.sb40k.filter.LogFilter
+import com.github.jingshouyan.sb40k.handler.RestAccessDeniedHandler
+import com.github.jingshouyan.sb40k.handler.RestAuthenticationEntryPoint
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -9,10 +12,10 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
-class SecurityConfig(val authFilter: AuthFilter) {
+class SecurityConfig {
 
     @Bean
-    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+    fun securityFilterChain(http: HttpSecurity, authFilter: AuthFilter, logFilter: LogFilter): SecurityFilterChain {
 
         return http
             .csrf { it.disable() }
@@ -28,10 +31,12 @@ class SecurityConfig(val authFilter: AuthFilter) {
                 ).permitAll()
                 it.anyRequest().authenticated()
             }
-            .addFilterBefore(
-                authFilter,
-                UsernamePasswordAuthenticationFilter::class.java
-            )
+            .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterAfter(logFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .exceptionHandling {
+                it.authenticationEntryPoint(RestAuthenticationEntryPoint())
+                it.accessDeniedHandler(RestAccessDeniedHandler())
+            }
             .build()
     }
 }

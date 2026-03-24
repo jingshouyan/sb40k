@@ -17,7 +17,6 @@ class AuthFilter(val ticketService: TicketService) : OncePerRequestFilter() {
         response: HttpServletResponse,
         chain: FilterChain
     ) {
-
         val authHeader = request.getHeader("Authorization")
 
         if (!authHeader.isNullOrBlank() && authHeader.startsWith("Bearer ")) {

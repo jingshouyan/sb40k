@@ -7,6 +7,7 @@ import com.github.jingshouyan.sb40k.entity.Ticket
 import com.github.jingshouyan.sb40k.entity.User
 import com.github.jingshouyan.sb40k.service.TicketService
 import com.github.jingshouyan.sb40k.service.UserService
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 
 
 @RestController
-@RequestMapping("/v1/auth")
+@RequestMapping("/api/v1/auth")
 class AuthController(
     private val userService: UserService,
     private val ticketService: TicketService,
@@ -32,16 +33,15 @@ class AuthController(
     @PostMapping("/signin")
     fun signin(@RequestBody req: SigninReq): R {
         val u = userService.checkPassword(C.ID_TYPE_USERNAME, req.username, req.password)
-        println(u.id)
         val ticket = Ticket(
             u.id ?: 0L,
             req.deviceType,
             System.currentTimeMillis(),
             req.deviceId,
         )
-        val token = ticketService.saveTicket(ticket)
-        return R.success(mapOf("u" to u, "token" to token))
+        return result(ticket, u)
     }
+
 
     @PostMapping("/signup")
     fun signup(@RequestBody req: SignupReq): R {
@@ -52,7 +52,29 @@ class AuthController(
         )
         val newUser = userService.addUser(u)
 
-        return R.success(newUser)
+        val ticket = Ticket(
+            newUser.id ?: 0L,
+            req.deviceType,
+            System.currentTimeMillis(),
+            req.deviceId,
+        )
+        return result(ticket, newUser)
+    }
+
+    private fun result(
+        ticket: Ticket,
+        u: User
+    ): R {
+        val token = ticketService.saveTicket(ticket)
+
+        val authentication = UsernamePasswordAuthenticationToken(
+            ticket,
+            token,
+            emptyList()
+        )
+        SecurityContextHolder.getContext().authentication = authentication
+
+        return R.success(mapOf("user" to u, "token" to token))
     }
 }
 
