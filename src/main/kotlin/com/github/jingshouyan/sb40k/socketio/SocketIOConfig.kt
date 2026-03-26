@@ -27,14 +27,13 @@ class SocketIOConfig {
         connectListener: ConnectListener,
         disconnectListener: DisconnectListener
     ): SocketIOServer {
-        log.info("Socket.IO server starting on port $port")
+        log.info("Socket.IO server starting on port {}", port)
         val config = Configuration()
         config.port = port
         config.authorizationListener = authListener
-        log.info("Socket.IO server auth configuration: ${config.authorizationListener}")
         server = SocketIOServer(config)
         server.start()
-        log.info("Socket.IO server started on port $port")
+        log.info("Socket.IO server started on port {}", port)
 
         server.addConnectListener(connectListener)
         server.addDisconnectListener(disconnectListener)

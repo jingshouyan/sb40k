@@ -2,6 +2,7 @@ package com.github.jingshouyan.sb40k.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration
+import java.util.concurrent.ConcurrentHashMap
 
 @Configuration
 @ConfigurationProperties("biz")
@@ -18,6 +19,8 @@ class BizConfig {
     var passwordExpireDays: Long = 180
 
     var tokenSecret: String = "sb40k_abc1113"
+
+    var maskSettings = ConcurrentHashMap<String, Int>()
 
 
 }

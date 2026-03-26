@@ -40,3 +40,7 @@ logging:
 
 socketio:
   port: 8082
+
+biz:
+  mask-settings:
+    password: 22
