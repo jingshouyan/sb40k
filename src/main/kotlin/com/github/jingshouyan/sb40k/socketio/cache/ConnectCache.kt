@@ -6,5 +6,7 @@ interface ConnectCache {
 
     fun removeConnection(info: ConnectionInfo)
 
+    fun validConnection(info: ConnectionInfo): Boolean
+
     fun getConnections(userIds: List<Long>, excludeToken: String): List<ConnectionInfo>
 }

@@ -38,6 +38,7 @@ class AuthController(
             req.deviceType,
             System.currentTimeMillis(),
             req.deviceId,
+            ""
         )
         return result(ticket, u)
     }
@@ -57,6 +58,7 @@ class AuthController(
             req.deviceType,
             System.currentTimeMillis(),
             req.deviceId,
+            ""
         )
         return result(ticket, newUser)
     }

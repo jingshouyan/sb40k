@@ -27,6 +27,12 @@ class ConnectCacheMemeryImpl : ConnectCache {
         }
     }
 
+    override fun validConnection(info: ConnectionInfo): Boolean {
+        val inner = cache[info.userId] ?: return false
+        val ci = inner[info.deviceId] ?: return false
+        return ci.sessionId == info.sessionId && ci.authToken == info.authToken
+    }
+
     override fun getConnections(userIds: List<Long>, excludeToken: String): List<ConnectionInfo> {
         val result = ArrayList<ConnectionInfo>()
         if (userIds.isEmpty()) return result

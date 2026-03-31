@@ -5,6 +5,7 @@ import com.corundumstudio.socketio.Configuration
 import com.corundumstudio.socketio.SocketIOServer
 import com.corundumstudio.socketio.listener.ConnectListener
 import com.corundumstudio.socketio.listener.DisconnectListener
+import com.corundumstudio.socketio.listener.PongListener
 import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -25,7 +26,8 @@ class SocketIOConfig {
     fun socketIOServer(
         authListener: AuthorizationListener,
         connectListener: ConnectListener,
-        disconnectListener: DisconnectListener
+        disconnectListener: DisconnectListener,
+        pongListener: PongListener,
     ): SocketIOServer {
         log.info("Socket.IO server starting on port {}", port)
         val config = Configuration()
@@ -37,6 +39,9 @@ class SocketIOConfig {
 
         server.addConnectListener(connectListener)
         server.addDisconnectListener(disconnectListener)
+        server.addPongListener(pongListener)
+
+
         return server
     }
 

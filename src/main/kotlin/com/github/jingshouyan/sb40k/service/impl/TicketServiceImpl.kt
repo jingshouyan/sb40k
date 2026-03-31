@@ -22,20 +22,12 @@ class TicketServiceImpl(
 
     override fun saveTicket(ticket: Ticket): String {
         val deviceIdBytes = ticket.deviceId.toByteArray(StandardCharsets.UTF_8)
-        val version = 1.toByte()
-        val buf = ByteBuffer.allocate(
-            1 + 8 + 1 + 8 + 4 + deviceIdBytes.size
-        )
-        buf.put(version)
+        val buf = ByteBuffer.allocate(8)
         buf.putLong(ticket.userId)
-        buf.put(ticket.deviceType)
-        buf.putLong(ticket.ts)
-        buf.putInt(deviceIdBytes.size)
-        buf.put(deviceIdBytes)
         val data = buf.array()
         val cipherBytes = AesGcmUtil.encryptBytes(data, cfg.tokenSecret)
         val token = Base58.encode(cipherBytes)
-
+        ticket.token = token
         // put cache
         put(ticket)
 
@@ -47,30 +39,20 @@ class TicketServiceImpl(
             val cipherBytes = Base58.decode(token)
             val data = AesGcmUtil.decryptBytes(cipherBytes, cfg.tokenSecret)
             val buf = ByteBuffer.wrap(data)
-            val version = buf.get()
-            if (version != 1.toByte()) {
-                return null
-            }
             val userId = buf.long
-            val deviceType = buf.get()
-            val ts = buf.long
-            val deviceIdLen = buf.int
-            if (deviceIdLen !in 0..1024) {
-                return null
-            }
-            val deviceIdBytes = ByteArray(deviceIdLen)
-            buf.get(deviceIdBytes)
-            val deviceId = String(deviceIdBytes, StandardCharsets.UTF_8)
+
+
             // use cache to verify token
-            val ticket = get(userId, deviceId)
+            val ticket = get(userId, token)
 
             return ticket
         } catch (e: Exception) {
-            log.warn("Failed to verify token: $token", e)
+            log.warn("Failed to verify token:{}", token, e)
             return null
         }
     }
 
+    // 用户ID -> token -> Ticket
     private val userCache: Cache<Long, Cache<String, Ticket>> = Caffeine.newBuilder()
         .expireAfterAccess(cfg.tokenExpireSeconds + 10, TimeUnit.SECONDS)
         .maximumSize(10_000)
@@ -78,22 +60,22 @@ class TicketServiceImpl(
 
     fun put(ticket: Ticket) {
         userCache.get(ticket.userId) {
-            newDeviceCache()
-        }.put(ticket.deviceId, ticket)
+            tokenCache()
+        }.put(ticket.token, ticket)
     }
 
-    fun get(userId: Long, deviceId: String): Ticket? {
-        return userCache.getIfPresent(userId)?.getIfPresent(deviceId)
+    fun get(userId: Long, token: String): Ticket? {
+        return userCache.getIfPresent(userId)?.getIfPresent(token)
     }
 
-    fun remove(userId: Long, deviceId: String) {
+    fun remove(userId: Long, token: String) {
         userCache.asMap().computeIfPresent(userId) { _, deviceCache ->
-            deviceCache.invalidate(deviceId)
+            deviceCache.invalidate(token)
             if (deviceCache.asMap().isEmpty()) null else deviceCache
         }
     }
 
-    fun newDeviceCache(): Cache<String, Ticket> {
+    fun tokenCache(): Cache<String, Ticket> {
         val newCache = Caffeine.newBuilder()
             .expireAfterAccess(cfg.tokenExpireSeconds, TimeUnit.SECONDS)
             .maximumSize(10)

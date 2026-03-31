@@ -39,7 +39,7 @@ logging:
     org.hibernate.type.descriptor.sql: trace
 
 socketio:
-  port: 8082
+  port: 8080
 
 biz:
   mask-settings:

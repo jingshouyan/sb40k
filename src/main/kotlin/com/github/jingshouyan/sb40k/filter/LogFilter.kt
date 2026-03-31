@@ -61,7 +61,11 @@ class LogFilter(
         val ticket = SecurityContextHolder.getContext().authentication?.principal?.toString() ?: "anonymous"
         if (log.isInfoEnabled) {
             log.info(
-                ">>> REQUEST {} {} {} Body: {}", request.method, request.requestURI, ticket, jsonMasking.masking(body)
+                ">>> REQUEST {} {} Ticket: {} Body: {}",
+                request.method,
+                request.requestURI,
+                ticket,
+                jsonMasking.masking(body)
             )
         }
 
