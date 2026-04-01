@@ -25,7 +25,7 @@ class AuthListener(val ticketService: TicketService) : AuthorizationListener {
         if (token != null) {
             val ticket = ticketService.getTicket(token)
             if (ticket != null) {
-                log.info("Token verified successfully for userId: ${ticket.userId}, deviceId: ${ticket.deviceId}")
+                log.info("Token verified successfully. Ticket: {}", ticket)
 
                 return AuthorizationResult(true, mapOf("ticket" to ticket))
 
