@@ -23,7 +23,7 @@ class AuthListener(val ticketService: TicketService) : AuthorizationListener {
     override fun getAuthorizationResult(data: HandshakeData?): AuthorizationResult? {
         val token = data?.urlParams?.get("token")?.get(0)
         if (token != null) {
-            val ticket = ticketService.varifyToken(token)
+            val ticket = ticketService.getTicket(token)
             if (ticket != null) {
                 log.info("Token verified successfully for userId: ${ticket.userId}, deviceId: ${ticket.deviceId}")
 
@@ -48,14 +48,14 @@ class ConnListener(val cache: ConnectCache) : ConnectListener {
             val connectionInfo = ConnectionInfo(
                 sessionId = client.sessionId,
                 remoteAddress = client.remoteAddress.toString(),
-                authToken = ticket.token,
+                token = ticket.token,
                 userId = ticket.userId,
                 deviceType = ticket.deviceType,
                 deviceId = ticket.deviceId
             )
             cache.addConnection(connectionInfo)
             client.set("connectionInfo", connectionInfo)
-            log.info("Client connected: ${client.sessionId}@${client.remoteAddress}")
+            log.info("Client connected: {}", connectionInfo)
         } else {
             log.warn("No ticket found in client attributes for session: ${client.sessionId}")
             client.disconnect()
@@ -72,16 +72,32 @@ class DisConnListener(val cache: ConnectCache) : DisconnectListener {
         val connectionInfo = client.get<ConnectionInfo>("connectionInfo")
         if (connectionInfo != null) {
             cache.removeConnection(connectionInfo)
+            log.info("Client disconnected: {}", connectionInfo)
+        } else {
+            log.info(
+                "Client disconnected: {}@{}, no connection info found",
+                client.sessionId,
+                client.remoteAddress
+            )
         }
-        log.info("Client disconnected: ${client.sessionId}@${client.remoteAddress}")
     }
 }
 
 @Component
-class PongCheckListener : PongListener {
+class PongCheckListener(val ticketService: TicketService) : PongListener {
     private val log = LoggerFactory.getLogger(PongCheckListener::class.java)
 
     override fun onPong(client: SocketIOClient) {
         log.info("Received pong from client: {}", client.sessionId)
+        val connectionInfo = client.get<ConnectionInfo>("connectionInfo")
+        if (connectionInfo != null) {
+            if (ticketService.getTicket(connectionInfo.token) == null) {
+                log.warn("Connection info invalid for client: {}, disconnecting", client.sessionId)
+                client.disconnect()
+            }
+        } else {
+            log.warn("No connection info found for client: {}, disconnecting", client.sessionId)
+            client.disconnect()
+        }
     }
 }

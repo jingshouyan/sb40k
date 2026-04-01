@@ -22,7 +22,7 @@ class AuthFilter(val ticketService: TicketService) : OncePerRequestFilter() {
         if (!authHeader.isNullOrBlank() && authHeader.startsWith("Bearer ")) {
 
             val token = authHeader.substring(7)
-            val ticket = ticketService.varifyToken(token)
+            val ticket = ticketService.getTicket(token)
             if (ticket != null) {
 
                 val authentication = UsernamePasswordAuthenticationToken(

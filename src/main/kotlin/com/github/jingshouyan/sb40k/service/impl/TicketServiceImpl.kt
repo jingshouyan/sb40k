@@ -34,7 +34,7 @@ class TicketServiceImpl(
         return token
     }
 
-    override fun varifyToken(token: String): Ticket? {
+    override fun getTicket(token: String): Ticket? {
         try {
             val cipherBytes = Base58.decode(token)
             val data = AesGcmUtil.decryptBytes(cipherBytes, cfg.tokenSecret)
@@ -59,9 +59,14 @@ class TicketServiceImpl(
         .build()
 
     fun put(ticket: Ticket) {
-        userCache.get(ticket.userId) {
+        val tc = userCache.get(ticket.userId) {
             tokenCache()
-        }.put(ticket.token, ticket)
+        }
+        val ot = tc.asMap().values.filter { it.deviceId == ticket.deviceId }
+        log.info("invalidate old ticket {}", ot)
+        ot.forEach { tc.invalidate(it.token) }
+        tc.put(ticket.token, ticket)
+
     }
 
     fun get(userId: Long, token: String): Ticket? {

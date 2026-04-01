@@ -30,7 +30,7 @@ class ConnectCacheMemeryImpl : ConnectCache {
     override fun validConnection(info: ConnectionInfo): Boolean {
         val inner = cache[info.userId] ?: return false
         val ci = inner[info.deviceId] ?: return false
-        return ci.sessionId == info.sessionId && ci.authToken == info.authToken
+        return ci.sessionId == info.sessionId && ci.token == info.token
     }
 
     override fun getConnections(userIds: List<Long>, excludeToken: String): List<ConnectionInfo> {
@@ -41,7 +41,7 @@ class ConnectCacheMemeryImpl : ConnectCache {
             for (ci in inner.values) {
                 // exclude connections whose authToken equals the provided excludeToken
                 // protect against nulls just in case (though authToken is non-null in the data class)
-                if (excludeToken.isNotEmpty() && ci.authToken == excludeToken) continue
+                if (excludeToken.isNotEmpty() && ci.token == excludeToken) continue
                 result.add(ci)
             }
         }
