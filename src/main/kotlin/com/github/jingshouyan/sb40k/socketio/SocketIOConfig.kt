@@ -6,6 +6,7 @@ import com.corundumstudio.socketio.SocketIOServer
 import com.corundumstudio.socketio.listener.ConnectListener
 import com.corundumstudio.socketio.listener.DisconnectListener
 import com.corundumstudio.socketio.listener.PongListener
+import com.github.jingshouyan.sb40k.socketio.listener.NamedDataListener
 import jakarta.annotation.PreDestroy
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -28,6 +29,7 @@ class SocketIOConfig {
         connectListener: ConnectListener,
         disconnectListener: DisconnectListener,
         pongListener: PongListener,
+        namedDataListeners: List<NamedDataListener<*>>,
     ): SocketIOServer {
         log.info("Socket.IO server starting on port {}", port)
         val config = Configuration()
@@ -40,6 +42,10 @@ class SocketIOConfig {
         server.addConnectListener(connectListener)
         server.addDisconnectListener(disconnectListener)
         server.addPongListener(pongListener)
+        namedDataListeners.forEach {
+            log.info("Registering Socket.IO event listener for event: {}", it.eventName())
+            it.register(server)
+        }
 
 
         return server

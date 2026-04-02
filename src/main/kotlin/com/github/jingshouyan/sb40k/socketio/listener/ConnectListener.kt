@@ -90,6 +90,18 @@ class PongCheckListener(val ticketService: TicketService) : PongListener {
     override fun onPong(client: SocketIOClient) {
         log.info("Received pong from client: {}", client.sessionId)
         val connectionInfo = client.get<ConnectionInfo>("connectionInfo")
+        client.sendEvent("welcome", "Welcome to the Socket.IO server!", connectionInfo)
+        val ackCallback = object : com.corundumstudio.socketio.AckCallback<String>(String::class.java) {
+            override fun onSuccess(result: String?) {
+                log.info("Ack received from client: {}, result: {}", client.sessionId, result)
+            }
+
+            override fun onTimeout() {
+                log.warn("Ack timeout for client: {}", client.sessionId)
+            }
+        }
+        client.sendEvent("ping", ackCallback, "Ping from server!")
+
         if (connectionInfo != null) {
             if (ticketService.getTicket(connectionInfo.token) == null) {
                 log.warn("Connection info invalid for client: {}, disconnecting", client.sessionId)
@@ -101,3 +113,4 @@ class PongCheckListener(val ticketService: TicketService) : PongListener {
         }
     }
 }
+
