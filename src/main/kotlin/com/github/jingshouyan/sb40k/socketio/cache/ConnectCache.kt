@@ -8,5 +8,5 @@ interface ConnectCache {
 
     fun validConnection(info: ConnectionInfo): Boolean
 
-    fun getConnections(userIds: List<Long>, excludeToken: String): List<ConnectionInfo>
+    fun getConnections(userIds: List<Long>): List<ConnectionInfo>
 }
