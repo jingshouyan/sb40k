@@ -36,14 +36,15 @@ abstract class AuditableEntity(
 ) : BaseIdEntity() {
 
     @CreatedBy
-    @Column(length = 64)
+    @Column(updatable = false, length = 64)
     var createBy: String? = null
 
     @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(updatable = false)
     var createdAt: Long? = null
 
     @LastModifiedBy
+    @Column(length = 64)
     var updatedBy: String? = null
 
     @LastModifiedDate

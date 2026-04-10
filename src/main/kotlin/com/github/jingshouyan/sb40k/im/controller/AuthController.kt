@@ -98,11 +98,12 @@ class AuthController(
     }
 
     @GetMapping("/singout")
-    fun signout() {
+    fun signout(): R {
         val ticket = SecurityContextHolder.getContext().authentication?.principal as Ticket
         ticketService.removeTicket(ticket)
 
         loginRecordService.logoutToken(ticket.token)
+        return R.success()
     }
 
     private fun saveLoginRecord(userId: Long, token: String, r: R, deviceInfo: DeviceInfo) {
