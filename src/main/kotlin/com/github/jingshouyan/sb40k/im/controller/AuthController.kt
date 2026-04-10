@@ -2,17 +2,18 @@ package com.github.jingshouyan.sb40k.im.controller
 
 import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.base.R
-import com.github.jingshouyan.sb40k.config.BizConfig
+import com.github.jingshouyan.sb40k.base.RC
+import com.github.jingshouyan.sb40k.entity.LoginRecord
 import com.github.jingshouyan.sb40k.entity.Ticket
 import com.github.jingshouyan.sb40k.entity.User
+import com.github.jingshouyan.sb40k.service.LoginRecordService
 import com.github.jingshouyan.sb40k.service.TicketService
 import com.github.jingshouyan.sb40k.service.UserService
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 
 
 @RestController
@@ -20,9 +21,8 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController(
     private val userService: UserService,
     private val ticketService: TicketService,
-    private val bizConfig: BizConfig,
-
-    ) {
+    private val loginRecordService: LoginRecordService,
+) {
 
     @RequestMapping("/ping")
     fun ping(): R {
@@ -32,15 +32,30 @@ class AuthController(
 
     @PostMapping("/signin")
     fun signin(@RequestBody req: SigninReq): R {
-        val u = userService.checkPassword(C.ID_TYPE_USERNAME, req.username, req.password)
+        val optUser = userService.getUser(C.ID_TYPE_USERNAME, req.username);
+        if (optUser.isEmpty) {
+            return R.error(RC.NOT_FOUND)
+        }
+        val u = optUser.get()
+        val r = userService.checkPassword(u, req.password)
+        if (r.code != RC.SUCCESS) {
+            val fakeToken = "fake-$u.id"
+            saveLoginRecord(u.id ?: 0L, fakeToken, r, req.deviceInfo)
+            return r
+        }
+
         val ticket = Ticket(
             u.id ?: 0L,
-            req.deviceType,
+            req.deviceInfo.deviceType,
             System.currentTimeMillis(),
-            req.deviceId,
+            req.deviceInfo.deviceId,
             ""
         )
-        return result(ticket, u)
+        val res = result(ticket, u)
+
+        saveLoginRecord(u.id ?: 0L, ticket.token, res, req.deviceInfo)
+
+        return res
     }
 
 
@@ -55,12 +70,15 @@ class AuthController(
 
         val ticket = Ticket(
             newUser.id ?: 0L,
-            req.deviceType,
+            req.deviceInfo.deviceType,
             System.currentTimeMillis(),
-            req.deviceId,
+            req.deviceInfo.deviceId,
             ""
         )
-        return result(ticket, newUser)
+
+        val r = result(ticket, newUser)
+        saveLoginRecord(newUser.id ?: 0L, ticket.token, r, req.deviceInfo)
+        return r
     }
 
     private fun result(
@@ -78,19 +96,65 @@ class AuthController(
 
         return R.success(mapOf("user" to u, "token" to token))
     }
+
+    @GetMapping("/singout")
+    fun signout() {
+        val ticket = SecurityContextHolder.getContext().authentication?.principal as Ticket
+        ticketService.removeTicket(ticket)
+
+        loginRecordService.logoutToken(ticket.token)
+    }
+
+    private fun saveLoginRecord(userId: Long, token: String, r: R, deviceInfo: DeviceInfo) {
+        val record = LoginRecord(
+            userId = userId,
+            deviceType = deviceInfo.deviceType,
+            deviceId = deviceInfo.deviceId,
+            token = token,
+            clientIP = deviceInfo.clientIP,
+            remoteIP = getRemoteIP(),
+            deviceName = deviceInfo.deviceName,
+            deviceDesc = deviceInfo.deviceDesc,
+            loginAt = System.currentTimeMillis(),
+            result = r.code,
+            extInfo = deviceInfo.extInfo,
+        )
+        if (!r.isSuccess()) {
+            record.logoutAt = -1L
+        }
+
+        loginRecordService.addLoginRecord(record)
+
+    }
+
+    private fun getRemoteIP(): String {
+        return RequestContextHolder.getRequestAttributes()?.let {
+            val request = (it as ServletRequestAttributes).request
+            request.remoteAddr
+        } ?: "can not get remote IP"
+    }
+
 }
+
 
 data class SigninReq(
     val username: String,
     val password: String,
-    val deviceType: Byte,
-    val deviceId: String
+    val deviceInfo: DeviceInfo,
 )
 
 data class SignupReq(
     val username: String,
     val password: String,
     val email: String,
+    val deviceInfo: DeviceInfo,
+)
+
+data class DeviceInfo(
     val deviceType: Byte,
-    val deviceId: String
+    val deviceId: String,
+    val clientIP: String,
+    val deviceName: String,
+    val deviceDesc: String,
+    val extInfo: String,
 )

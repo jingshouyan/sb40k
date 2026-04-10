@@ -5,6 +5,9 @@ class R(
     val msg: String?,
     val data: Any?
 ) {
+    fun isSuccess(): Boolean {
+        return code == RC.SUCCESS
+    }
 
 
     companion object {

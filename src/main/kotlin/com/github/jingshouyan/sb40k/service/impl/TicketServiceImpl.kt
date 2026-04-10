@@ -52,6 +52,10 @@ class TicketServiceImpl(
         }
     }
 
+    override fun removeTicket(ticket: Ticket) {
+        remove(ticket.userId, ticket.token)
+    }
+
     // 用户ID -> token -> Ticket
     private val userCache: Cache<Long, Cache<String, Ticket>> = Caffeine.newBuilder()
         .expireAfterAccess(cfg.tokenExpireSeconds + 10, TimeUnit.SECONDS)

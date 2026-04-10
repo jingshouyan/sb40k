@@ -36,6 +36,7 @@ abstract class AuditableEntity(
 ) : BaseIdEntity() {
 
     @CreatedBy
+    @Column(length = 64)
     var createBy: String? = null
 
     @CreatedDate

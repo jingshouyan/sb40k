@@ -1,7 +1,7 @@
 package com.github.jingshouyan.sb40k.service.impl
 
-import com.github.jingshouyan.sb40k.base.BizException
 import com.github.jingshouyan.sb40k.base.C
+import com.github.jingshouyan.sb40k.base.R
 import com.github.jingshouyan.sb40k.base.RC
 import com.github.jingshouyan.sb40k.config.BizConfig
 import com.github.jingshouyan.sb40k.entity.User
@@ -28,41 +28,41 @@ class UserServiceImpl(
         return user
     }
 
-    override fun checkPassword(idType: Int, id: String, password: String): User {
+    override fun getUser(idType: Int, id: String): Optional<User> {
+        return when (idType) {
+            C.ID_TYPE_USERNAME -> userRepo.findByUsername(id)
+            C.ID_TYPE_USERID -> userRepo.findById(id.toLong())
+            else -> Optional.empty()
+        }
+    }
+
+    override fun checkPassword(user: User, password: String): R {
         val now = System.currentTimeMillis()
-        var user: Optional<User> = Optional.empty()
-        when (idType) {
-            C.ID_TYPE_USERNAME -> user = userRepo.findByUsername(id)
-            C.ID_TYPE_USERID -> user = userRepo.findById(id.toLong())
-        }
-        if (user.isEmpty) throw BizException(RC.NOT_FOUND)
-        val u = user.get()
         // check if user is locked
-        if (u.unlockedAt > now) {
-            throw BizException(RC.USER_LOCKED, mapOf("unlockAt" to u.unlockedAt))
+        if (user.unlockedAt > now) {
+            return R.error(RC.USER_LOCKED, mapOf("unlockAt" to user.unlockedAt))
         }
 
-        if (encoder.matches(password, u.password)) {
-            return u
+        if (encoder.matches(password, user.password)) {
+            return R.success()
         }
 
-        if (now - u.firstTryAt > cfg.passwordTryPeriodInSeconds * 1000) {
-            u.firstTryAt = now
-            u.tryCount = 1
+        if (now - user.firstTryAt > cfg.passwordTryPeriodInSeconds * 1000) {
+            user.firstTryAt = now
+            user.tryCount = 1
         } else {
-            u.tryCount++
+            user.tryCount++
         }
         // lock user if try count exceeds max try count
-        if (u.tryCount >= cfg.passwordMaxTry) {
-            u.unlockedAt = now + cfg.passwordLockExpireSeconds * 1000
+        if (user.tryCount >= cfg.passwordMaxTry) {
+            user.unlockedAt = now + cfg.passwordLockExpireSeconds * 1000
         }
-        userRepo.save(u)
+        userRepo.save(user)
         // check if user is locked after update try count
-        if (u.unlockedAt > now) {
-            throw BizException(RC.USER_LOCKED, mapOf("unlockAt" to u.unlockedAt))
+        if (user.unlockedAt > now) {
+            return R.error(RC.USER_LOCKED, mapOf("unlockAt" to user.unlockedAt))
         }
-
-        throw BizException(RC.PASSWORD_INCORRECT, mapOf("tryCount" to u.tryCount))
+        return R.error(RC.PASSWORD_INCORRECT, mapOf("tryCount" to user.tryCount))
     }
 
 
