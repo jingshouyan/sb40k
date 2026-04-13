@@ -65,11 +65,9 @@ class LogFilter(
                 request.method,
                 request.requestURI,
                 ticket,
-                jsonMasking.masking(body)
+                jsonMasking.masking2(body)
             )
         }
-
-
     }
 
     private fun logResponse(response: ContentCachingResponseWrapper, cost: Long) {
@@ -80,7 +78,7 @@ class LogFilter(
             else -> String(response.contentAsByteArray, StandardCharsets.UTF_8)
         }
         if (log.isInfoEnabled) {
-            log.info("<<< RESPONSE status={} cost={}ms Body: {}", response.status, cost, jsonMasking.masking(body))
+            log.info("<<< RESPONSE status={} cost={}ms Body: {}", response.status, cost, jsonMasking.masking2(body))
         }
 
     }

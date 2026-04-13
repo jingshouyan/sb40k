@@ -42,6 +42,7 @@ class JsonMasking(private val cfg: Map<String, Int>) {
                 if (token == JsonToken.FIELD_NAME) {
                     val key = parser.currentName()
                     token = parser.nextToken()
+                    val name2 = parser.currentName()
                     val setting = cfg[key]
 
                     if (setting != null) {
@@ -73,6 +74,114 @@ class JsonMasking(private val cfg: Map<String, Int>) {
             json
         }
     }
+
+
+    /**
+     * json 字符串脱敏,并去除格式，object,array 不整体脱敏，而是对其中的字段进行脱敏
+     */
+    fun masking2(json: String?): String? {
+        if (json == null || cfg.isEmpty()) {
+            return json
+        }
+
+        return try {
+            val parser = JSON_FACTORY.createParser(json)
+            val sb = StringBuilder()
+            var token: JsonToken?
+            var previousToken: JsonToken? = null
+            val keyIndex = mutableMapOf<Int, String>()
+            var index = 0
+            while (parser.nextToken().also { token = it } != null) {
+                if (needComma(previousToken, token)) {
+                    sb.append(',')
+                }
+                if (token == JsonToken.START_OBJECT) {
+                    index++
+                }
+                if (token == JsonToken.END_OBJECT) {
+                    index--
+                }
+
+                when (token) {
+                    JsonToken.START_OBJECT,
+                    JsonToken.END_OBJECT,
+                    JsonToken.START_ARRAY,
+                    JsonToken.END_ARRAY,
+                    JsonToken.VALUE_TRUE,
+                    JsonToken.VALUE_FALSE,
+                    JsonToken.VALUE_NULL
+                        -> sb.append(token.asString())
+
+                    JsonToken.FIELD_NAME -> {
+                        val key = parser.currentName()
+                        keyIndex[index] = key
+                        sb.append('"').append(key).append('"').append(':')
+                    }
+
+                    JsonToken.VALUE_STRING -> {
+
+                        val setting = cfg[keyIndex[index]]
+                        val value = parser.valueAsString
+                        val masked = stringMaskingInPlace(value, setting)
+                        sb.append('"').append(masked).append('"')
+                    }
+
+                    JsonToken.VALUE_NUMBER_INT,
+                    JsonToken.VALUE_NUMBER_FLOAT -> {
+                        val setting = cfg[keyIndex[index]]
+                        if (setting != null) {
+                            sb.append('0')
+                        } else {
+                            sb.append(parser.valueAsString)
+                        }
+                    }
+
+                    else -> sb.append(token?.asString())
+                }
+
+                previousToken = token
+            }
+            sb.toString()
+        } catch (e: Throwable) {
+            log.warn("json mask failed, data: {}", json, e)
+            json
+        }
+    }
+
+    fun needComma(previousToken: JsonToken?, currentToken: JsonToken?): Boolean {
+        if (previousToken == null || currentToken == null) {
+            return false
+        }
+        when (previousToken) {
+            JsonToken.START_OBJECT, JsonToken.START_ARRAY, JsonToken.FIELD_NAME -> return false
+            else -> {}
+        }
+        when (currentToken) {
+            JsonToken.END_OBJECT, JsonToken.END_ARRAY -> return false
+            else -> {}
+        }
+
+        return true
+    }
+
+    fun stringMaskingInPlace(value: String, setting: Int?): String {
+        if (setting == null) {
+            return value
+        }
+        val prefixLen = getDigit(setting, BIT_STRING_START)
+        val suffixLen = getDigit(setting, BIT_STRING_END)
+        val valueLen = value.length
+        if (prefixLen + suffixLen < valueLen) {
+            val sb = StringBuilder()
+            sb.append(value.substring(0, prefixLen))
+            sb.append(CHAR_MASK)
+            sb.append(value.substring(valueLen - suffixLen))
+            return sb.toString()
+        } else {
+            return value
+        }
+    }
+
 
     /**
      * 字符串脱敏（完全保留原逻辑）
