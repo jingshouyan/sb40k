@@ -38,6 +38,7 @@ object RC {
     const val PARAM_INVALID = 1001
     const val PARAM_UNBIND = 1002
     const val PARAM_ERROR = 1003
+    const val ALREADY_EXISTS = 1004
 
     const val PASSWORD_INCORRECT = 10001
     const val USER_LOCKED = 10002
@@ -49,7 +50,8 @@ object RC {
         RC.SERVER_ERROR to "server error",
         RC.PARAM_INVALID to "param invalid",
         RC.PARAM_UNBIND to "param unbind",
-        RC.PARAM_ERROR to "param error"
+        RC.PARAM_ERROR to "param error",
+        RC.ALREADY_EXISTS to "already exists",
     )
 
 }

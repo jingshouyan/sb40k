@@ -1,5 +1,6 @@
 package com.github.jingshouyan.sb40k.service.impl
 
+import com.github.jingshouyan.sb40k.base.BizException
 import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.base.R
 import com.github.jingshouyan.sb40k.base.RC
@@ -21,6 +22,9 @@ class UserServiceImpl(
 
 
     override fun addUser(user: User): User {
+        userRepo.findByUsername(user.username).ifPresent {
+            throw BizException(RC.ALREADY_EXISTS)
+        }
         val pwd = user.password
         user.password = encoder.encode(pwd).toString()
         userRepo.save(user)

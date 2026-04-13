@@ -44,4 +44,6 @@ socketio:
 
 biz:
   mask-settings:
-    password: 22
+    username: 22
+    password: 11
+    email: 33
