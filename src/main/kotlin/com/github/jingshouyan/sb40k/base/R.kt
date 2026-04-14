@@ -5,7 +5,7 @@ class R(
     val msg: String?,
     val data: Any?
 ) {
-    fun isSuccess(): Boolean {
+    fun success(): Boolean {
         return code == RC.SUCCESS
     }
 

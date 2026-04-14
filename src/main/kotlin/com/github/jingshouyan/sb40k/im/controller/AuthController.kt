@@ -120,7 +120,7 @@ class AuthController(
             result = r.code,
             extInfo = deviceInfo.extInfo,
         )
-        if (!r.isSuccess()) {
+        if (!r.success()) {
             record.logoutAt = -1L
         }
 
