@@ -1,12 +1,13 @@
 package com.github.jingshouyan.sb40k.service.impl
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper
 import com.github.jingshouyan.sb40k.base.BizException
 import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.base.R
 import com.github.jingshouyan.sb40k.base.RC
 import com.github.jingshouyan.sb40k.config.BizConfig
 import com.github.jingshouyan.sb40k.entity.User
-import com.github.jingshouyan.sb40k.repository.UserRepository
+import com.github.jingshouyan.sb40k.mapper.UserMapper
 import com.github.jingshouyan.sb40k.service.UserService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -15,27 +16,34 @@ import java.util.*
 
 @Service
 class UserServiceImpl(
-    private val userRepo: UserRepository,
+    private val userMapper: UserMapper,
     private val cfg: BizConfig,
     private val encoder: PasswordEncoder = BCryptPasswordEncoder()
 ) : UserService {
 
 
     override fun addUser(user: User): User {
-        userRepo.findByUsername(user.username).ifPresent {
+        val existing = userMapper.selectOne(
+            LambdaQueryWrapper<User>().eq(User::username, user.username)
+        )
+        if (existing != null) {
             throw BizException(RC.ALREADY_EXISTS)
         }
         val pwd = user.password
         user.password = encoder.encode(pwd).toString()
-        userRepo.save(user)
+        userMapper.insert(user)
         user.password = pwd
         return user
     }
 
     override fun getUser(idType: Int, id: String): Optional<User> {
         return when (idType) {
-            C.ID_TYPE_USERNAME -> userRepo.findByUsername(id)
-            C.ID_TYPE_USERID -> userRepo.findById(id.toLong())
+            C.ID_TYPE_USERNAME -> Optional.ofNullable(
+                userMapper.selectOne(
+                    LambdaQueryWrapper<User>().eq(User::username, id)
+                )
+            )
+            C.ID_TYPE_USERID -> Optional.ofNullable(userMapper.selectById(id.toLong()))
             else -> Optional.empty()
         }
     }
@@ -61,7 +69,7 @@ class UserServiceImpl(
         if (user.tryCount >= cfg.passwordMaxTry) {
             user.unlockedAt = now + cfg.passwordLockExpireSeconds * 1000
         }
-        userRepo.save(user)
+        userMapper.updateById(user)
         // check if user is locked after update try count
         if (user.unlockedAt > now) {
             return R.error(RC.USER_LOCKED, mapOf("unlockAt" to user.unlockedAt))

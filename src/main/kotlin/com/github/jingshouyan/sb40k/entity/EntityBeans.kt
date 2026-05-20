@@ -1,11 +1,9 @@
 package com.github.jingshouyan.sb40k.entity
 
-import jakarta.persistence.*
-import org.springframework.data.annotation.CreatedBy
-import org.springframework.data.annotation.CreatedDate
-import org.springframework.data.annotation.LastModifiedBy
-import org.springframework.data.annotation.LastModifiedDate
-import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import com.baomidou.mybatisplus.annotation.FieldFill
+import com.baomidou.mybatisplus.annotation.IdType
+import com.baomidou.mybatisplus.annotation.TableField
+import com.baomidou.mybatisplus.annotation.TableId
 
 enum class OrderStatus {
     CREATED,        // 已创建
@@ -21,55 +19,25 @@ enum class PaymentStatus {
     REFUNDED
 }
 
-@MappedSuperclass
 abstract class BaseIdEntity(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @TableId(type = IdType.AUTO)
     val id: Long? = null
 )
 
 
-@MappedSuperclass
-@EntityListeners(AuditingEntityListener::class)
 abstract class AuditableEntity(
     var deletedAt: Long? = null
 ) : BaseIdEntity() {
 
-    @CreatedBy
-    @Column(updatable = false, length = 64)
+    @TableField(fill = FieldFill.INSERT)
     var createBy: String? = null
 
-    @CreatedDate
-    @Column(updatable = false)
+    @TableField(fill = FieldFill.INSERT)
     var createdAt: Long? = null
 
-    @LastModifiedBy
-    @Column(length = 64)
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     var updatedBy: String? = null
 
-    @LastModifiedDate
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     var updatedAt: Long? = null
-}
-
-
-@MappedSuperclass
-@EntityListeners(AuditingEntityListener::class)
-abstract class AuditableEntity2 {
-
-    @CreatedBy
-    @Column(updatable = false, length = 64)
-    var createBy: String? = null
-
-    @CreatedDate
-    @Column(updatable = false)
-    var createdAt: Long? = null
-
-    @LastModifiedBy
-    @Column(length = 64)
-    var updatedBy: String? = null
-
-    @LastModifiedDate
-    var updatedAt: Long? = null
-
-    var deletedAt: Long? = null
 }

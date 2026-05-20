@@ -5,10 +5,9 @@ plugins {
     kotlin("plugin.spring") version "2.3.0"
     id("org.springframework.boot") version "4.0.0"
     id("io.spring.dependency-management") version "1.1.7"
-    id("org.hibernate.orm") version "7.1.8.Final"
     id("org.graalvm.buildtools.native") version "0.11.3"
     id("org.asciidoctor.jvm.convert") version "4.0.5"
-    kotlin("plugin.jpa") version "2.3.0"
+    kotlin("plugin.noarg") version "2.3.0"
 }
 
 
@@ -43,7 +42,7 @@ dependencyManagement {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("com.baomidou:mybatis-plus-spring-boot3-starter:3.5.12")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
@@ -58,7 +57,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-restdocs")
     testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
-    testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
+
     testImplementation("org.springframework.boot:spring-boot-starter-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
@@ -72,16 +71,12 @@ kotlin {
     }
 }
 
-hibernate {
-    enhancement {
-        enableAssociationManagement = true
-    }
+allOpen {
+    annotation("com.baomidou.mybatisplus.annotation.TableName")
 }
 
-allOpen {
-    annotation("jakarta.persistence.Entity")
-    annotation("jakarta.persistence.MappedSuperclass")
-    annotation("jakarta.persistence.Embeddable")
+noArg {
+    annotation("com.baomidou.mybatisplus.annotation.TableName")
 }
 
 tasks.withType<Test> {

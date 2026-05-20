@@ -1,43 +1,36 @@
 package com.github.jingshouyan.sb40k.entity
 
-import jakarta.persistence.*
+import com.baomidou.mybatisplus.annotation.TableField
+import com.baomidou.mybatisplus.annotation.TableName
+import com.baomidou.mybatisplus.annotation.Version
 import java.time.LocalDateTime
 
-@Entity
-@Table
+@TableName("t_order")
 class Order(
 
-    // 下单用户
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    var user: User,
+    var userId: Long,
 
-    // 总金额
-    @Column(nullable = false)
     var totalAmount: Int,
 
-    // 状态（待支付、已支付、已发货…）
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     var status: OrderStatus = OrderStatus.CREATED,
 
-    // 支付状态
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     var paymentStatus: PaymentStatus = PaymentStatus.UNPAID,
 
     var paidAt: LocalDateTime? = null,
     var shippedAt: LocalDateTime? = null,
 
     @Version
-    var version: Long? = null,   // 乐观锁
+    var version: Long? = null,
 ) : AuditableEntity() {
-    // 一对多：OrderItem 列表
-    @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL], orphanRemoval = true)
+
+    @TableField(exist = false)
+    var user: User? = null
+
+    @TableField(exist = false)
     var items: MutableList<OrderItem> = mutableListOf()
 
     fun addItem(item: OrderItem) {
-        item.order = this
+        item.orderId = this.id ?: 0L
         items += item
     }
 

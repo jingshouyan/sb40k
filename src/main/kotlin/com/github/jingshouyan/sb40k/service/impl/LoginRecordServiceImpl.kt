@@ -1,32 +1,55 @@
 package com.github.jingshouyan.sb40k.service.impl
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper
 import com.github.jingshouyan.sb40k.entity.LoginRecord
-import com.github.jingshouyan.sb40k.repository.LoginRecordRepository
+import com.github.jingshouyan.sb40k.mapper.LoginRecordMapper
 import com.github.jingshouyan.sb40k.service.LoginRecordService
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 @Service
-class LoginRecordServiceImpl(val loginRecordRepository: LoginRecordRepository) : LoginRecordService {
+class LoginRecordServiceImpl(
+    private val loginRecordMapper: LoginRecordMapper
+) : LoginRecordService {
 
     @Transactional
     override fun addLoginRecord(loginRecord: LoginRecord) {
         val now = System.currentTimeMillis()
-        loginRecordRepository.updateLogoutAtByUserId(now, loginRecord.userId, loginRecord.deviceId)
-        loginRecordRepository.save(loginRecord)
+        loginRecordMapper.update(
+            null,
+            LambdaUpdateWrapper<LoginRecord>()
+                .eq(LoginRecord::userId, loginRecord.userId)
+                .eq(LoginRecord::deviceId, loginRecord.deviceId)
+                .gt(LoginRecord::logoutAt, now)
+                .set(LoginRecord::logoutAt, now)
+        )
+        loginRecordMapper.insert(loginRecord)
     }
 
     override fun logoutToken(token: String) {
-        loginRecordRepository.findByToken(token).ifPresent {
-            it.logoutAt = System.currentTimeMillis()
-            loginRecordRepository.save(it)
+        val record = loginRecordMapper.selectOne(
+            LambdaQueryWrapper<LoginRecord>().eq(LoginRecord::token, token)
+        )
+        if (record != null) {
+            loginRecordMapper.update(
+                null,
+                LambdaUpdateWrapper<LoginRecord>()
+                    .eq(LoginRecord::token, token)
+                    .set(LoginRecord::logoutAt, System.currentTimeMillis())
+            )
         }
     }
 
     @Transactional
     override fun logoutUser(userId: Long) {
         val now = System.currentTimeMillis()
-
-        loginRecordRepository.updateLogoutAtByUserId(now, userId)
+        loginRecordMapper.update(
+            null,
+            LambdaUpdateWrapper<LoginRecord>()
+                .eq(LoginRecord::userId, userId)
+                .gt(LoginRecord::logoutAt, now)
+                .set(LoginRecord::logoutAt, now)
+        )
     }
 }

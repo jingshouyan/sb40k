@@ -1,12 +1,10 @@
 package com.github.jingshouyan.sb40k.entity
 
-import jakarta.persistence.Entity
-import jakarta.persistence.Table
+import com.baomidou.mybatisplus.annotation.TableName
 
-@Entity
-@Table
+@TableName("t_message")
 class Message(
-    senderId: Long,
-    deviceId: String,
+    var senderId: Long,
+    var deviceId: String,
 
     ) : AuditableEntity()
