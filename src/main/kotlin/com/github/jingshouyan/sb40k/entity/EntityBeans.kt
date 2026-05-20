@@ -19,15 +19,19 @@ enum class PaymentStatus {
     REFUNDED
 }
 
-abstract class BaseIdEntity(
-    @TableId(type = IdType.AUTO)
+object EntityPrefix {
+    const val USER = "u_"
+}
+
+abstract class LongIdEntity(
+    @TableId(type = IdType.ASSIGN_ID)
     val id: Long? = null
-)
+) : AuditableEntity()
 
 
 abstract class AuditableEntity(
     var deletedAt: Long? = null
-) : BaseIdEntity() {
+) {
 
     @TableField(fill = FieldFill.INSERT)
     var createBy: String? = null
@@ -40,4 +44,11 @@ abstract class AuditableEntity(
 
     @TableField(fill = FieldFill.INSERT_UPDATE)
     var updatedAt: Long? = null
+}
+
+abstract class StringIdEntity(
+    @TableId(type = IdType.ASSIGN_UUID)
+    val id: String? = null
+) : AuditableEntity() {
+    abstract fun idPrefix(): String
 }

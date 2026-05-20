@@ -23,4 +23,6 @@ class User(
 
     var firstTryAt: Long = 0L,
 
-    ) : AuditableEntity()
+    ) : StringIdEntity() {
+    override fun idPrefix() = EntityPrefix.USER
+}

@@ -21,7 +21,7 @@ class Order(
 
     @Version
     var version: Long? = null,
-) : AuditableEntity() {
+) : LongIdEntity() {
 
     @TableField(exist = false)
     var user: User? = null

@@ -7,4 +7,4 @@ class Message(
     var senderId: Long,
     var deviceId: String,
 
-    ) : AuditableEntity()
+    ) : LongIdEntity()

@@ -16,6 +16,6 @@ class LoginRecord(
     val loginAt: Long,
     val result: Int,
     val extInfo: String,
-) : AuditableEntity() {
+) : LongIdEntity() {
     var logoutAt: Long = Long.MAX_VALUE
 }

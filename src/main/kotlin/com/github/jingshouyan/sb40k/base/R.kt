@@ -44,17 +44,17 @@ object RC {
     const val USER_LOCKED = 10002
 
     val MSG_MAP = mapOf(
-        RC.SUCCESS to "success",
-        RC.ERROR to "error",
-        RC.NOT_FOUND to "not found",
-        RC.SERVER_ERROR to "server error",
-        RC.PARAM_INVALID to "param invalid",
-        RC.PARAM_UNBIND to "param unbind",
-        RC.PARAM_ERROR to "param error",
-        RC.ALREADY_EXISTS to "already exists",
+        SUCCESS to "success",
+        ERROR to "error",
+        NOT_FOUND to "not found",
+        SERVER_ERROR to "server error",
+        PARAM_INVALID to "param invalid",
+        PARAM_UNBIND to "param unbind",
+        PARAM_ERROR to "param error",
+        ALREADY_EXISTS to "already exists",
 
-        RC.PASSWORD_INCORRECT to "password incorrect",
-        RC.USER_LOCKED to "user locked",
+        PASSWORD_INCORRECT to "password incorrect",
+        USER_LOCKED to "user locked",
 
         )
 

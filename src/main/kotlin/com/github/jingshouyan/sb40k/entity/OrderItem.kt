@@ -15,7 +15,7 @@ class OrderItem(
     var price: Int,
 
     var quantity: Int
-) : AuditableEntity() {
+) : LongIdEntity() {
 
     @TableField(exist = false)
     var order: Order? = null

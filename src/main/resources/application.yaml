@@ -39,6 +39,7 @@ socketio:
   port: 8080
 
 biz:
+  snowflake-worker-id: 0
   mask-settings:
     username: 22
     password: 11
