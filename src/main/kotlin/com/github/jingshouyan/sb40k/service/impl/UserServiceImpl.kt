@@ -43,7 +43,7 @@ class UserServiceImpl(
                     LambdaQueryWrapper<User>().eq(User::username, id)
                 )
             )
-            C.ID_TYPE_USERID -> Optional.ofNullable(userMapper.selectById(id.toLong()))
+            C.ID_TYPE_USERID -> Optional.ofNullable(userMapper.selectById(id))
             else -> Optional.empty()
         }
     }

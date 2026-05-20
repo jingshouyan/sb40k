@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 @TableName("t_order")
 class Order(
 
-    var userId: Long,
+    var userId: String,
 
     var totalAmount: Int,
 

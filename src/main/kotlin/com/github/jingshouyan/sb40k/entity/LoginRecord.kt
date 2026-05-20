@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableName
 
 @TableName("t_login_record")
 class LoginRecord(
-    val userId: Long,
+    val userId: String,
 
     val token: String,
     val deviceType: Byte,

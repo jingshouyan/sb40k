@@ -40,12 +40,12 @@ class AuthController(
         val r = userService.checkPassword(u, req.password)
         if (r.code != RC.SUCCESS) {
             val fakeToken = "fake-$u.id"
-            saveLoginRecord(u.id ?: 0L, fakeToken, r, req.deviceInfo)
+            saveLoginRecord(u.id ?: "", fakeToken, r, req.deviceInfo)
             return r
         }
 
         val ticket = Ticket(
-            u.id ?: 0L,
+            u.id ?: "",
             req.deviceInfo.deviceType,
             System.currentTimeMillis(),
             req.deviceInfo.deviceId,
@@ -53,7 +53,7 @@ class AuthController(
         )
         val res = result(ticket, u)
 
-        saveLoginRecord(u.id ?: 0L, ticket.token, res, req.deviceInfo)
+        saveLoginRecord(u.id ?: "", ticket.token, res, req.deviceInfo)
 
         return res
     }
@@ -69,7 +69,7 @@ class AuthController(
         val newUser = userService.addUser(u)
 
         val ticket = Ticket(
-            newUser.id ?: 0L,
+            newUser.id ?: "",
             req.deviceInfo.deviceType,
             System.currentTimeMillis(),
             req.deviceInfo.deviceId,
@@ -77,7 +77,7 @@ class AuthController(
         )
 
         val r = result(ticket, newUser)
-        saveLoginRecord(newUser.id ?: 0L, ticket.token, r, req.deviceInfo)
+        saveLoginRecord(newUser.id ?: "", ticket.token, r, req.deviceInfo)
         return r
     }
 
@@ -106,7 +106,7 @@ class AuthController(
         return R.success()
     }
 
-    private fun saveLoginRecord(userId: Long, token: String, r: R, deviceInfo: DeviceInfo) {
+    private fun saveLoginRecord(userId: String, token: String, r: R, deviceInfo: DeviceInfo) {
         val record = LoginRecord(
             userId = userId,
             deviceType = deviceInfo.deviceType,

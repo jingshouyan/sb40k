@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 class Pusher(val connectCache: ConnectCache, val socketIOServer: SocketIOServer) {
 
 
-    fun push(userIds: List<Long>, event: String, data: Any) {
+    fun push(userIds: List<String>, event: String, data: Any) {
         val connections = connectCache.getConnections(userIds)
         for (ci in connections) {
             socketIOServer.getClient(ci.sessionId)?.sendEvent(event, data)

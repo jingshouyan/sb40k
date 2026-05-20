@@ -42,7 +42,7 @@ class LoginRecordServiceImpl(
     }
 
     @Transactional
-    override fun logoutUser(userId: Long) {
+    override fun logoutUser(userId: String) {
         val now = System.currentTimeMillis()
         loginRecordMapper.update(
             null,

@@ -9,7 +9,6 @@ import com.github.jingshouyan.sb40k.util.AesGcmUtil
 import com.github.jingshouyan.sb40k.util.Base58
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 
@@ -21,16 +20,11 @@ class TicketServiceImpl(
     private val log = LoggerFactory.getLogger(TicketServiceImpl::class.java)
 
     override fun saveTicket(ticket: Ticket): String {
-        val deviceIdBytes = ticket.deviceId.toByteArray(StandardCharsets.UTF_8)
-        val buf = ByteBuffer.allocate(8)
-        buf.putLong(ticket.userId)
-        val data = buf.array()
+        val data = ticket.userId.toByteArray(StandardCharsets.UTF_8)
         val cipherBytes = AesGcmUtil.encryptBytes(data, cfg.tokenSecret)
         val token = Base58.encode(cipherBytes)
         ticket.token = token
-        // put cache
         put(ticket)
-
         return token
     }
 
@@ -38,13 +32,9 @@ class TicketServiceImpl(
         try {
             val cipherBytes = Base58.decode(token)
             val data = AesGcmUtil.decryptBytes(cipherBytes, cfg.tokenSecret)
-            val buf = ByteBuffer.wrap(data)
-            val userId = buf.long
+            val userId = String(data, StandardCharsets.UTF_8)
 
-
-            // use cache to verify token
             val ticket = get(userId, token)
-
             return ticket
         } catch (e: Exception) {
             log.warn("Failed to verify token:{}", token, e)
@@ -56,8 +46,7 @@ class TicketServiceImpl(
         remove(ticket.userId, ticket.token)
     }
 
-    // 用户ID -> token -> Ticket
-    private val userCache: Cache<Long, Cache<String, Ticket>> = Caffeine.newBuilder()
+    private val userCache: Cache<String, Cache<String, Ticket>> = Caffeine.newBuilder()
         .expireAfterAccess(cfg.tokenExpireSeconds + 10, TimeUnit.SECONDS)
         .maximumSize(10_000)
         .build()
@@ -70,14 +59,13 @@ class TicketServiceImpl(
         log.info("invalidate old ticket {}", ot)
         ot.forEach { tc.invalidate(it.token) }
         tc.put(ticket.token, ticket)
-
     }
 
-    fun get(userId: Long, token: String): Ticket? {
+    fun get(userId: String, token: String): Ticket? {
         return userCache.getIfPresent(userId)?.getIfPresent(token)
     }
 
-    fun remove(userId: Long, token: String) {
+    fun remove(userId: String, token: String) {
         userCache.asMap().computeIfPresent(userId) { _, deviceCache ->
             deviceCache.invalidate(token)
             if (deviceCache.asMap().isEmpty()) null else deviceCache

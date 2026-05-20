@@ -11,7 +11,7 @@ class ConnectCacheMemeryImpl : ConnectCache {
     /**
      * 用户ID -> 设备ID -> 连接信息
      */
-    private val cache = ConcurrentHashMap<Long, ConcurrentHashMap<String, ConnectionInfo>>()
+    private val cache = ConcurrentHashMap<String, ConcurrentHashMap<String, ConnectionInfo>>()
 
     override fun addConnection(info: ConnectionInfo) {
         val inner = cache.computeIfAbsent(info.userId) { ConcurrentHashMap() }
@@ -34,7 +34,7 @@ class ConnectCacheMemeryImpl : ConnectCache {
     }
 
 
-    override fun getConnections(userIds: List<Long>): List<ConnectionInfo> {
+    override fun getConnections(userIds: List<String>): List<ConnectionInfo> {
         val result = mutableListOf<ConnectionInfo>()
         for (userId in userIds) {
             cache[userId]?.let { inner ->

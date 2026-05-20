@@ -28,6 +28,6 @@ class MyMetaObjectHandler : MetaObjectHandler {
     private fun getCurrentUserId(): String {
         val authentication = SecurityContextHolder.getContext().authentication
         val ticket = authentication?.principal as? Ticket ?: return "system"
-        return ticket.userId.toString()
+        return ticket.userId
     }
 }

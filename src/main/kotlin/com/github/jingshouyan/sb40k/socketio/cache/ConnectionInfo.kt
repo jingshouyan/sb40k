@@ -6,12 +6,12 @@ data class ConnectionInfo(
     val sessionId: UUID,
     val remoteAddress: String,
     val token: String,
-    val userId: Long,
+    val userId: String,
     val deviceType: Byte,
     val deviceId: String,
 ) {
 
     override fun toString(): String {
-        return """{"sessionId":"$sessionId","remoteAddress":"$remoteAddress","token":"$token","userId":$userId,"deviceType":$deviceType,"deviceId":"$deviceId"}"""
+        return """{"sessionId":"$sessionId","remoteAddress":"$remoteAddress","token":"$token","userId":"$userId","deviceType":$deviceType,"deviceId":"$deviceId"}"""
     }
 }
