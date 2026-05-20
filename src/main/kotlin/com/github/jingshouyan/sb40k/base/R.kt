@@ -52,6 +52,10 @@ object RC {
         RC.PARAM_UNBIND to "param unbind",
         RC.PARAM_ERROR to "param error",
         RC.ALREADY_EXISTS to "already exists",
-    )
+
+        RC.PASSWORD_INCORRECT to "password incorrect",
+        RC.USER_LOCKED to "user locked",
+
+        )
 
 }
