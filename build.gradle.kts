@@ -42,7 +42,7 @@ dependencyManagement {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("com.baomidou:mybatis-plus-spring-boot3-starter:3.5.12")
+    implementation("com.baomidou:mybatis-plus-spring-boot4-starter:3.5.15")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")

@@ -22,6 +22,7 @@ mybatis-plus:
     db-config:
       column-format: "c_%s"
       id-type: auto
+      ddl-auto: update
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
@@ -44,3 +45,5 @@ biz:
     username: 22
     password: 11
     email: 33
+
+kind: Application
