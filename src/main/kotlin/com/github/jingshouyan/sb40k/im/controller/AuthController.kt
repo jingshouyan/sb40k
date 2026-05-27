@@ -40,7 +40,7 @@ class AuthController(
         val r = userService.checkPassword(u, req.password)
         if (r.code != RC.SUCCESS) {
             val fakeToken = "fake-$u.id"
-            saveLoginRecord(u.id ?: "", fakeToken, r, req.deviceInfo)
+            saveLoginRecord(u.id ?: "", fakeToken, r.code, req.deviceInfo)
             return r
         }
 
@@ -51,11 +51,11 @@ class AuthController(
             req.deviceInfo.deviceId,
             ""
         )
-        val res = result(ticket, u)
+        val result = result(ticket, u)
 
-        saveLoginRecord(u.id ?: "", ticket.token, res, req.deviceInfo)
+        saveLoginRecord(u.id ?: "", ticket.token, RC.SUCCESS, req.deviceInfo)
 
-        return res
+        return R.success(result)
     }
 
 
@@ -76,15 +76,15 @@ class AuthController(
             ""
         )
 
-        val r = result(ticket, newUser)
-        saveLoginRecord(newUser.id ?: "", ticket.token, r, req.deviceInfo)
-        return r
+        val result = result(ticket, newUser)
+        saveLoginRecord(newUser.id ?: "", ticket.token, RC.SUCCESS, req.deviceInfo)
+        return R.success(result)
     }
 
     private fun result(
         ticket: Ticket,
         u: User
-    ): R {
+    ): LoginResult {
         val token = ticketService.saveTicket(ticket)
 
         val authentication = UsernamePasswordAuthenticationToken(
@@ -94,7 +94,10 @@ class AuthController(
         )
         SecurityContextHolder.getContext().authentication = authentication
 
-        return R.success(mapOf("user" to u, "token" to token))
+        return LoginResult(
+            ticket = ticket,
+            user = u,
+        )
     }
 
     @GetMapping("/singout")
@@ -106,7 +109,7 @@ class AuthController(
         return R.success()
     }
 
-    private fun saveLoginRecord(userId: String, token: String, r: R, deviceInfo: DeviceInfo) {
+    private fun saveLoginRecord(userId: String, token: String, resultCode: Int, deviceInfo: DeviceInfo) {
         val record = LoginRecord(
             userId = userId,
             deviceType = deviceInfo.deviceType,
@@ -117,10 +120,10 @@ class AuthController(
             deviceName = deviceInfo.deviceName,
             deviceDesc = deviceInfo.deviceDesc,
             loginAt = System.currentTimeMillis(),
-            result = r.code,
+            result = resultCode,
             extInfo = deviceInfo.extInfo,
         )
-        if (!r.success()) {
+        if (resultCode != RC.SUCCESS) {
             record.logoutAt = -1L
         }
 
@@ -158,4 +161,9 @@ data class DeviceInfo(
     val deviceName: String,
     val deviceDesc: String,
     val extInfo: String,
+)
+
+data class LoginResult(
+    val ticket: Ticket,
+    val user: User,
 )
