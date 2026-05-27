@@ -1,7 +1,6 @@
 package com.github.jingshouyan.sb40k.im.controller
 
 import com.github.jingshouyan.sb40k.base.BizException
-import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.base.R
 import com.github.jingshouyan.sb40k.base.RC
 import com.github.jingshouyan.sb40k.entity.LoginRecord
@@ -33,12 +32,7 @@ class AuthController(
 
     @PostMapping("/signin")
     fun signin(@RequestBody req: SigninReq): R<LoginResult> {
-        val idType = when (req.accountType) {
-            "email" -> C.ID_TYPE_EMAIL
-            "phone" -> C.ID_TYPE_PHONE
-            else -> throw BizException(RC.PARAM_INVALID, "accountType must be 'email' or 'phone'")
-        }
-        val optUser = userService.getUser(idType, req.account);
+        val optUser = userService.getUser(req.idType, req.account);
         if (optUser.isEmpty) {
             throw BizException(RC.NOT_FOUND)
         }
@@ -150,7 +144,7 @@ class AuthController(
 
 data class SigninReq(
     val account: String,
-    val accountType: String,
+    val idType: Int,
     val password: String,
     val deviceInfo: DeviceInfo,
 )

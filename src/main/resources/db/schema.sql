@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS t_user (
     c_id VARCHAR(32) NOT NULL PRIMARY KEY,
     c_username VARCHAR(50),
-    c_password VARCHAR(100),
+    c_password VARCHAR(50),
     c_email VARCHAR(50),
     c_phone VARCHAR(20),
     c_nickname VARCHAR(50),
