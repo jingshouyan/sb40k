@@ -1,8 +1,10 @@
 CREATE TABLE IF NOT EXISTS t_user (
     c_id VARCHAR(32) NOT NULL PRIMARY KEY,
-    c_username VARCHAR(50) NOT NULL,
+    c_username VARCHAR(50),
     c_password VARCHAR(100),
-    c_email VARCHAR(100),
+    c_email VARCHAR(50),
+    c_phone VARCHAR(20),
+    c_nickname VARCHAR(50),
     c_version BIGINT DEFAULT 0,
     c_unlocked_at BIGINT DEFAULT 0,
     c_try_count BIGINT DEFAULT 0,
@@ -12,7 +14,8 @@ CREATE TABLE IF NOT EXISTS t_user (
     c_created_at BIGINT,
     c_updated_by VARCHAR(64),
     c_updated_at BIGINT,
-    UNIQUE INDEX idx_username (c_username)
+    UNIQUE INDEX idx_email (c_email),
+    UNIQUE INDEX idx_phone (c_phone)
 );
 
 CREATE TABLE IF NOT EXISTS t_login_record (

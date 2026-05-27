@@ -33,7 +33,12 @@ class AuthController(
 
     @PostMapping("/signin")
     fun signin(@RequestBody req: SigninReq): R<LoginResult> {
-        val optUser = userService.getUser(C.ID_TYPE_USERNAME, req.username);
+        val idType = when (req.accountType) {
+            "email" -> C.ID_TYPE_EMAIL
+            "phone" -> C.ID_TYPE_PHONE
+            else -> throw BizException(RC.PARAM_INVALID, "accountType must be 'email' or 'phone'")
+        }
+        val optUser = userService.getUser(idType, req.account);
         if (optUser.isEmpty) {
             throw BizException(RC.NOT_FOUND)
         }
@@ -63,9 +68,10 @@ class AuthController(
     @PostMapping("/signup")
     fun signup(@RequestBody req: SignupReq): R<LoginResult> {
         val u = User(
-            username = req.username,
             password = req.password,
             email = req.email,
+            phone = req.phone,
+            nickname = req.nickname,
         )
         val newUser = userService.addUser(u)
 
@@ -143,15 +149,17 @@ class AuthController(
 
 
 data class SigninReq(
-    val username: String,
+    val account: String,
+    val accountType: String,
     val password: String,
     val deviceInfo: DeviceInfo,
 )
 
 data class SignupReq(
-    val username: String,
     val password: String,
-    val email: String,
+    val email: String? = null,
+    val phone: String? = null,
+    val nickname: String? = null,
     val deviceInfo: DeviceInfo,
 )
 

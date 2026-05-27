@@ -7,12 +7,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 @TableName("t_user")
 class User(
 
-    var username: String,
+    var username: String? = null,
 
     @JsonIgnore
     var password: String,
 
     var email: String? = null,
+
+    var phone: String? = null,
+
+    var nickname: String? = null,
 
     @Version
     var version: Long? = null,

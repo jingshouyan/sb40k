@@ -13,9 +13,10 @@ class UserMapperTest @Autowired constructor(val userMapper: UserMapper) {
     @Test
     fun `save user`() {
         var user = User(
-            username = "testuser",
             password = "password123",
-            email = "abc@111.com"
+            email = "abc@111.com",
+            phone = "13800138000",
+            nickname = "testuser",
         )
         userMapper.insert(user)
         assertEquals(0L, user.version)
@@ -25,7 +26,7 @@ class UserMapperTest @Autowired constructor(val userMapper: UserMapper) {
         assertEquals(1L, user.version)
         println("---------------------------")
         val ou = userMapper.selectOne(
-            LambdaQueryWrapper<User>().eq(User::username, "testuser")
+            LambdaQueryWrapper<User>().eq(User::email, "abc@111.com")
         )
         assertEquals(true, ou != null)
         userMapper.deleteById(ou!!.id)
