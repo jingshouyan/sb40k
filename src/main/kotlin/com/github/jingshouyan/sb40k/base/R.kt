@@ -1,9 +1,9 @@
 package com.github.jingshouyan.sb40k.base
 
-class R(
+class R<T>(
     val code: Int,
     val msg: String?,
-    val data: Any?
+    val data: T?
 ) {
     fun success(): Boolean {
         return code == RC.SUCCESS
@@ -12,19 +12,19 @@ class R(
 
     companion object {
 
-        fun success(): R {
-            return success(null)
+        fun success(): R<Any?> {
+            return R(RC.SUCCESS, RC.MSG_MAP[RC.SUCCESS], null)
         }
 
-        fun success(data: Any?): R {
-            return error(RC.SUCCESS, data)
+        fun <T> success(data: T): R<T> {
+            return R(RC.SUCCESS, RC.MSG_MAP[RC.SUCCESS], data)
         }
 
-        fun error(code: Int): R {
-            return error(code, null)
+        fun error(code: Int): R<Any?> {
+            return R(code, RC.MSG_MAP[code], null)
         }
 
-        fun error(code: Int, data: Any?): R {
+        fun <T> error(code: Int, data: T): R<T> {
             return R(code, RC.MSG_MAP[code], data)
         }
     }

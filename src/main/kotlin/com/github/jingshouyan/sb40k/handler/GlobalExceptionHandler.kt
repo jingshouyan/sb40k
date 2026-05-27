@@ -21,33 +21,33 @@ class GlobalExceptionHandler {
 
     // ✅ 业务异常
     @ExceptionHandler(BizException::class)
-    fun handleBiz(e: BizException): R {
+    fun handleBiz(e: BizException): R<Any?> {
         return R.error(e.code, e.data)
     }
 
     // ✅ 参数校验异常（@Valid）
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValid(e: MethodArgumentNotValidException): R {
+    fun handleValid(e: MethodArgumentNotValidException): R<Any?> {
         val data = e.bindingResult.fieldErrors.map { "${it.field}:${it.defaultMessage}" }
         return R.error(RC.PARAM_INVALID, data)
     }
 
     // ✅ form 参数校验
     @ExceptionHandler(BindException::class)
-    fun handleBind(e: BindException): R {
+    fun handleBind(e: BindException): R<Any?> {
         val data = e.bindingResult.fieldErrors.map { "${it.field}:${it.defaultMessage}" }
         return R.error(RC.PARAM_UNBIND, data)
     }
 
     // ✅ 参数类型错误
     @ExceptionHandler(MethodArgumentTypeMismatchException::class)
-    fun handleType(e: MethodArgumentTypeMismatchException): R {
+    fun handleType(e: MethodArgumentTypeMismatchException): R<Any?> {
         return R.error(RC.PARAM_ERROR, "${e.name} should be of type ${e.requiredType?.simpleName}")
     }
 
     // ✅ JSON 解析错误
     @ExceptionHandler(HttpMessageNotReadableException::class)
-    fun HandleJsonParse(e: HttpMessageNotReadableException): R {
+    fun HandleJsonParse(e: HttpMessageNotReadableException): R<Any?> {
         val data = when (val cause = e.cause) {
 
             is MismatchedInputException -> {
@@ -63,7 +63,7 @@ class GlobalExceptionHandler {
     // ✅ 兜底异常（必须有）
     @ExceptionHandler(Exception::class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    fun handle(e: Exception): R {
+    fun handle(e: Exception): R<Any?> {
         log.warn("Unhandled exception: ${e.message}", e)
 
         return R.error(RC.SERVER_ERROR, "${e.cause?.message}")

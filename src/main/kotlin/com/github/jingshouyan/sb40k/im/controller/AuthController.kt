@@ -1,5 +1,6 @@
 package com.github.jingshouyan.sb40k.im.controller
 
+import com.github.jingshouyan.sb40k.base.BizException
 import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.base.R
 import com.github.jingshouyan.sb40k.base.RC
@@ -25,23 +26,23 @@ class AuthController(
 ) {
 
     @RequestMapping("/ping")
-    fun ping(): R {
+    fun ping(): R<Ticket> {
         val ticket = SecurityContextHolder.getContext().authentication?.principal as Ticket
         return R.success(ticket)
     }
 
     @PostMapping("/signin")
-    fun signin(@RequestBody req: SigninReq): R {
+    fun signin(@RequestBody req: SigninReq): R<LoginResult> {
         val optUser = userService.getUser(C.ID_TYPE_USERNAME, req.username);
         if (optUser.isEmpty) {
-            return R.error(RC.NOT_FOUND)
+            throw BizException(RC.NOT_FOUND)
         }
         val u = optUser.get()
         val r = userService.checkPassword(u, req.password)
         if (r.code != RC.SUCCESS) {
             val fakeToken = "fake-$u.id"
             saveLoginRecord(u.id ?: "", fakeToken, r.code, req.deviceInfo)
-            return r
+            throw BizException(r.code, r.data)
         }
 
         val ticket = Ticket(
@@ -60,7 +61,7 @@ class AuthController(
 
 
     @PostMapping("/signup")
-    fun signup(@RequestBody req: SignupReq): R {
+    fun signup(@RequestBody req: SignupReq): R<LoginResult> {
         val u = User(
             username = req.username,
             password = req.password,
@@ -101,7 +102,7 @@ class AuthController(
     }
 
     @GetMapping("/singout")
-    fun signout(): R {
+    fun signout(): R<Any?> {
         val ticket = SecurityContextHolder.getContext().authentication?.principal as Ticket
         ticketService.removeTicket(ticket)
 

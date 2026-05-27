@@ -48,7 +48,7 @@ class UserServiceImpl(
         }
     }
 
-    override fun checkPassword(user: User, password: String): R {
+    override fun checkPassword(user: User, password: String): R<Any?> {
         val now = System.currentTimeMillis()
         // check if user is locked
         if (user.unlockedAt > now) {

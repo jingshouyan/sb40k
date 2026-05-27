@@ -10,5 +10,5 @@ interface UserService {
 
     fun getUser(idType: Int, id: String): Optional<User>
 
-    fun checkPassword(user: User, password: String): R
+    fun checkPassword(user: User, password: String): R<Any?>
 }
