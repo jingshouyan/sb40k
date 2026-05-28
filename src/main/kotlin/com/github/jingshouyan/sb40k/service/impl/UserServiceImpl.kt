@@ -23,6 +23,16 @@ class UserServiceImpl(
 
 
     override fun addUser(user: User): User {
+
+        if (!user.username.isNullOrBlank()) {
+            val existingByUsername = userMapper.selectOne(
+                LambdaQueryWrapper<User>().eq(User::username, user.username)
+            )
+            if (existingByUsername != null) {
+                throw BizException(RC.ALREADY_EXISTS, "username already exists")
+            }
+        }
+
         // check email uniqueness
         if (!user.email.isNullOrBlank()) {
             val existingByEmail = userMapper.selectOne(
@@ -55,17 +65,20 @@ class UserServiceImpl(
                     LambdaQueryWrapper<User>().eq(User::username, id)
                 )
             )
+
             C.ID_TYPE_USERID -> Optional.ofNullable(userMapper.selectById(id))
             C.ID_TYPE_EMAIL -> Optional.ofNullable(
                 userMapper.selectOne(
                     LambdaQueryWrapper<User>().eq(User::email, id)
                 )
             )
+
             C.ID_TYPE_PHONE -> Optional.ofNullable(
                 userMapper.selectOne(
                     LambdaQueryWrapper<User>().eq(User::phone, id)
                 )
             )
+
             else -> Optional.empty()
         }
     }
