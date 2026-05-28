@@ -48,6 +48,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
     implementation("com.corundumstudio.socketio:netty-socketio:2.0.13")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.projectlombok:lombok")

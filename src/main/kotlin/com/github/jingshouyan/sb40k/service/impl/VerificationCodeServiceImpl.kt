@@ -1,17 +1,21 @@
 package com.github.jingshouyan.sb40k.service.impl
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper
+import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.config.BizConfig
 import com.github.jingshouyan.sb40k.entity.VerificationCode
 import com.github.jingshouyan.sb40k.mapper.VerificationCodeMapper
 import com.github.jingshouyan.sb40k.service.VerificationCodeService
 import org.slf4j.LoggerFactory
+import org.springframework.mail.SimpleMailMessage
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.stereotype.Service
 
 @Service
 class VerificationCodeServiceImpl(
     private val verificationCodeMapper: VerificationCodeMapper,
     private val cfg: BizConfig,
+    private val mailSender: JavaMailSender,
 ) : VerificationCodeService {
 
     private val log = LoggerFactory.getLogger(VerificationCodeServiceImpl::class.java)
@@ -82,7 +86,32 @@ class VerificationCodeServiceImpl(
     }
 
     private fun sendCode(vc: VerificationCode) {
-        val paramInfo = if (vc.params.isNullOrEmpty()) "" else " params=${vc.params}"
-        log.info("[FAKE SEND] code=$vc.code to account=$vc.account idType=$vc.idType lang=$vc.lang$paramInfo")
+        when (vc.idType) {
+            C.ID_TYPE_EMAIL -> sendEmail(vc.account, vc.code, vc.lang)
+            C.ID_TYPE_PHONE -> log.info("[FAKE SMS] code=${vc.code} to phone=${vc.account}")
+            else -> log.warn("Unknown idType=${vc.idType}, cannot send code=${vc.code} to ${vc.account}")
+        }
+    }
+
+    private fun sendEmail(to: String, code: String, lang: String?) {
+        val subject = when {
+            lang?.startsWith("zh") == true -> "验证码"
+            else -> "Verification Code"
+        }
+        val text = when {
+            lang?.startsWith("zh") == true -> "您的验证码是：$code，有效期 ${cfg.verificationCodeExpireMinutes} 分钟。"
+            else -> "Your verification code is: $code, valid for ${cfg.verificationCodeExpireMinutes} minutes."
+        }
+        try {
+            val msg = SimpleMailMessage().apply {
+                setTo(to)
+                setSubject(subject)
+                setText(text)
+            }
+            mailSender.send(msg)
+            log.info("[EMAIL SENT] code=$code to=$to lang=$lang")
+        } catch (e: Exception) {
+            log.error("Failed to send email to $to", e)
+        }
     }
 }

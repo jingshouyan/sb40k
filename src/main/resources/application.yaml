@@ -32,6 +32,19 @@ server:
   forward-headers-strategy: framework
 
 
+spring:
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: noreply@example.com
+    password: your-password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 logging:
   level:
     com.github.jingshouyan.sb40k.mapper: debug
