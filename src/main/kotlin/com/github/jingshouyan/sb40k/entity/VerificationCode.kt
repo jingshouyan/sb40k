@@ -1,6 +1,8 @@
 package com.github.jingshouyan.sb40k.entity
 
+import com.baomidou.mybatisplus.annotation.TableField
 import com.baomidou.mybatisplus.annotation.TableName
+import com.github.jingshouyan.sb40k.handler.JsonMapTypeHandler
 
 @TableName("t_verification_code")
 class VerificationCode(
@@ -14,6 +16,9 @@ class VerificationCode(
     var businessType: String,
 
     var lang: String? = null,
+
+    @TableField(typeHandler = JsonMapTypeHandler::class)
+    var params: Map<String, String>? = null,
 
     var expireAt: Long,
 

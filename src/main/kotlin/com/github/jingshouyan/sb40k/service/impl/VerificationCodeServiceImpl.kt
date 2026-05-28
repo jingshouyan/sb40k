@@ -37,10 +37,11 @@ class VerificationCodeServiceImpl(
             } else {
                 // 超过 1 分钟，重新发送，刷新过期时间
                 existing.lang = lang
+                existing.params = params
                 existing.sentAt = now
                 existing.expireAt = now + expireMs
                 verificationCodeMapper.updateById(existing)
-                sendCode(existing, params)
+                sendCode(existing)
                 existing.id!!
             }
         } else {
@@ -51,11 +52,12 @@ class VerificationCodeServiceImpl(
                 code = code,
                 businessType = businessType,
                 lang = lang,
+                params = params,
                 sentAt = now,
                 expireAt = now + expireMs,
             )
             verificationCodeMapper.insert(entity)
-            sendCode(entity, params)
+            sendCode(entity)
             entity.id!!
         }
     }
@@ -64,8 +66,8 @@ class VerificationCodeServiceImpl(
         return (100000..999999).random().toString()
     }
 
-    private fun sendCode(vc: VerificationCode, params: Map<String, String>? = null) {
-        val paramInfo = if (params.isNullOrEmpty()) "" else " params=$params"
+    private fun sendCode(vc: VerificationCode) {
+        val paramInfo = if (vc.params.isNullOrEmpty()) "" else " params=${vc.params}"
         log.info("[FAKE SEND] code=$vc.code to target=$vc.target lang=$vc.lang$paramInfo")
     }
 }

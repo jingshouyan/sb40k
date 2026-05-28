@@ -89,6 +89,7 @@ CREATE TABLE IF NOT EXISTS t_verification_code (
     c_code VARCHAR(6) NOT NULL,
     c_business_type VARCHAR(32) NOT NULL,
     c_lang VARCHAR(10),
+    c_params JSON,
     c_expire_at BIGINT NOT NULL,
     c_sent_at BIGINT NOT NULL,
     c_deleted_at BIGINT NULL,

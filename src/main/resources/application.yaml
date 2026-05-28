@@ -18,6 +18,7 @@ spring:
       password: admin123
 
 mybatis-plus:
+  type-handlers-package: com.github.jingshouyan.sb40k.handler
   global-config:
     db-config:
       column-format: "c_%s"
