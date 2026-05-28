@@ -16,7 +16,7 @@ class VerificationCodeServiceImpl(
 
     private val log = LoggerFactory.getLogger(VerificationCodeServiceImpl::class.java)
 
-    override fun trigger(target: String, businessType: String): String {
+    override fun trigger(target: String, businessType: String, lang: String?, params: Map<String, String>?): String {
         val now = System.currentTimeMillis()
         val expireMs = cfg.verificationCodeExpireMinutes * 60 * 1000
         val resendIntervalMs = cfg.verificationCodeResendIntervalSeconds * 1000
@@ -35,13 +35,12 @@ class VerificationCodeServiceImpl(
                 // 1 分钟内，直接返回已有 id
                 existing.id!!
             } else {
-                // 超过 1 分钟，重新生成验证码，刷新过期时间
-                val newCode = generateCode()
-                existing.code = newCode
+                // 超过 1 分钟，重新发送，刷新过期时间
+                existing.lang = lang
                 existing.sentAt = now
                 existing.expireAt = now + expireMs
                 verificationCodeMapper.updateById(existing)
-                sendCode(target, newCode)
+                sendCode(existing, params)
                 existing.id!!
             }
         } else {
@@ -51,11 +50,12 @@ class VerificationCodeServiceImpl(
                 target = target,
                 code = code,
                 businessType = businessType,
+                lang = lang,
                 sentAt = now,
                 expireAt = now + expireMs,
             )
             verificationCodeMapper.insert(entity)
-            sendCode(target, code)
+            sendCode(entity, params)
             entity.id!!
         }
     }
@@ -64,7 +64,8 @@ class VerificationCodeServiceImpl(
         return (100000..999999).random().toString()
     }
 
-    private fun sendCode(target: String, code: String) {
-        log.info("[FAKE SEND] code=$code to target=$target")
+    private fun sendCode(vc: VerificationCode, params: Map<String, String>? = null) {
+        val paramInfo = if (params.isNullOrEmpty()) "" else " params=$params"
+        log.info("[FAKE SEND] code=$vc.code to target=$vc.target lang=$vc.lang$paramInfo")
     }
 }

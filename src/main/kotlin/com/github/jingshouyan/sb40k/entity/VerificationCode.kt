@@ -13,6 +13,8 @@ class VerificationCode(
 
     var businessType: String,
 
+    var lang: String? = null,
+
     var expireAt: Long,
 
     var sentAt: Long,
