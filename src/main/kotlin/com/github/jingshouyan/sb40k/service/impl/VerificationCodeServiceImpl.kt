@@ -86,21 +86,23 @@ class VerificationCodeServiceImpl(
     }
 
     private fun sendCode(vc: VerificationCode) {
+        val serial = vc.id?.takeLast(4) ?: "????"
+        val suffix = " (编号:$serial)"
         when (vc.idType) {
-            C.ID_TYPE_EMAIL -> sendEmail(vc.account, vc.code, vc.lang)
-            C.ID_TYPE_PHONE -> log.info("[FAKE SMS] code=${vc.code} to phone=${vc.account}")
+            C.ID_TYPE_EMAIL -> sendEmail(vc.account, vc.code, vc.lang, suffix)
+            C.ID_TYPE_PHONE -> log.info("[FAKE SMS] code=${vc.code} to phone=${vc.account}$suffix")
             else -> log.warn("Unknown idType=${vc.idType}, cannot send code=${vc.code} to ${vc.account}")
         }
     }
 
-    private fun sendEmail(to: String, code: String, lang: String?) {
+    private fun sendEmail(to: String, code: String, lang: String?, suffix: String) {
         val subject = when {
             lang?.startsWith("zh") == true -> "验证码"
             else -> "Verification Code"
         }
         val text = when {
-            lang?.startsWith("zh") == true -> "您的验证码是：$code，有效期 ${cfg.verificationCodeExpireMinutes} 分钟。"
-            else -> "Your verification code is: $code, valid for ${cfg.verificationCodeExpireMinutes} minutes."
+            lang?.startsWith("zh") == true -> "您的验证码是：$code，有效期 ${cfg.verificationCodeExpireMinutes} 分钟。$suffix"
+            else -> "Your verification code is: $code, valid for ${cfg.verificationCodeExpireMinutes} minutes.$suffix"
         }
         try {
             val msg = SimpleMailMessage().apply {
@@ -109,7 +111,7 @@ class VerificationCodeServiceImpl(
                 setText(text)
             }
             mailSender.send(msg)
-            log.info("[EMAIL SENT] code=$code to=$to lang=$lang")
+            log.info("[EMAIL SENT] code=$code to=$to lang=$lang$suffix")
         } catch (e: Exception) {
             log.error("Failed to send email to $to", e)
         }
