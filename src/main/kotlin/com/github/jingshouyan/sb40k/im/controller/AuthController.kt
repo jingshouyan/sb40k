@@ -63,7 +63,7 @@ class AuthController(
 
     @PostMapping("/code")
     fun code(@RequestBody req: CodeReq): R<String> {
-        val id = verificationCodeService.trigger(req.target, req.businessType, req.lang, req.params)
+        val id = verificationCodeService.trigger(req.account, req.idType, req.businessType, req.lang, req.params)
         return R.success(id)
     }
 
@@ -151,7 +151,8 @@ class AuthController(
 
 
 data class CodeReq(
-    val target: String,
+    val account: String,
+    val idType: Int,
     val businessType: String,
     val lang: String? = null,
     val params: Map<String, String>? = null,

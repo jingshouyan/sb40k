@@ -85,17 +85,19 @@ CREATE TABLE IF NOT EXISTS t_message (
 CREATE TABLE IF NOT EXISTS t_verification_code (
     c_id VARCHAR(32) NOT NULL PRIMARY KEY,
     c_user_id VARCHAR(32),
-    c_target VARCHAR(100) NOT NULL,
+    c_account VARCHAR(100) NOT NULL,
+    c_id_type INT NOT NULL,
     c_code VARCHAR(6) NOT NULL,
     c_business_type VARCHAR(32) NOT NULL,
     c_lang VARCHAR(10),
     c_params JSON,
     c_expire_at BIGINT NOT NULL,
     c_sent_at BIGINT NOT NULL,
+    c_verified_at BIGINT NULL,
     c_deleted_at BIGINT NULL,
     c_create_by VARCHAR(64),
     c_created_at BIGINT,
     c_updated_by VARCHAR(64),
     c_updated_at BIGINT,
-    INDEX idx_target__business_type__expire_at (c_target, c_business_type, c_expire_at)
+    INDEX idx_account__id_type__business_type__expire_at (c_account, c_id_type, c_business_type, c_expire_at)
 );

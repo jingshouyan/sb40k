@@ -9,7 +9,9 @@ class VerificationCode(
 
     var userId: String? = null,
 
-    var target: String,
+    var account: String,
+
+    var idType: Int,
 
     var code: String,
 
@@ -23,6 +25,8 @@ class VerificationCode(
     var expireAt: Long,
 
     var sentAt: Long,
+
+    var verifiedAt: Long? = null,
 
 ) : StringIdEntity() {
     override fun idPrefix() = EntityPrefix.VERIFICATION_CODE

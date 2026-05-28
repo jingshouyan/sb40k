@@ -16,15 +16,17 @@ class VerificationCodeServiceImpl(
 
     private val log = LoggerFactory.getLogger(VerificationCodeServiceImpl::class.java)
 
-    override fun trigger(target: String, businessType: String, lang: String?, params: Map<String, String>?): String {
+    override fun trigger(account: String, idType: Int, businessType: String, lang: String?, params: Map<String, String>?): String {
         val now = System.currentTimeMillis()
         val expireMs = cfg.verificationCodeExpireMinutes * 60 * 1000
         val resendIntervalMs = cfg.verificationCodeResendIntervalSeconds * 1000
 
         val existing = verificationCodeMapper.selectOne(
             LambdaQueryWrapper<VerificationCode>()
-                .eq(VerificationCode::target, target)
+                .eq(VerificationCode::account, account)
+                .eq(VerificationCode::idType, idType)
                 .eq(VerificationCode::businessType, businessType)
+                .isNull(VerificationCode::verifiedAt)
                 .gt(VerificationCode::expireAt, now)
                 .orderByDesc(VerificationCode::sentAt)
                 .last("LIMIT 1")
@@ -48,7 +50,8 @@ class VerificationCodeServiceImpl(
             // 无未过期记录，新建
             val code = generateCode()
             val entity = VerificationCode(
-                target = target,
+                account = account,
+                idType = idType,
                 code = code,
                 businessType = businessType,
                 lang = lang,
@@ -62,12 +65,24 @@ class VerificationCodeServiceImpl(
         }
     }
 
+    override fun verify(id: String, code: String): Boolean {
+        val now = System.currentTimeMillis()
+        val vc = verificationCodeMapper.selectById(id) ?: return false
+        if (vc.code != code) return false
+        if (vc.expireAt <= now) return false
+        if (vc.verifiedAt != null) return false
+
+        vc.verifiedAt = now
+        verificationCodeMapper.updateById(vc)
+        return true
+    }
+
     private fun generateCode(): String {
         return (100000..999999).random().toString()
     }
 
     private fun sendCode(vc: VerificationCode) {
         val paramInfo = if (vc.params.isNullOrEmpty()) "" else " params=${vc.params}"
-        log.info("[FAKE SEND] code=$vc.code to target=$vc.target lang=$vc.lang$paramInfo")
+        log.info("[FAKE SEND] code=$vc.code to account=$vc.account idType=$vc.idType lang=$vc.lang$paramInfo")
     }
 }
