@@ -21,6 +21,7 @@ enum class PaymentStatus {
 
 object EntityPrefix {
     const val USER = "u_"
+    const val VERIFICATION_CODE = "vc_"
 }
 
 abstract class LongIdEntity(

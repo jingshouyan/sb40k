@@ -9,6 +9,7 @@ import com.github.jingshouyan.sb40k.entity.User
 import com.github.jingshouyan.sb40k.service.LoginRecordService
 import com.github.jingshouyan.sb40k.service.TicketService
 import com.github.jingshouyan.sb40k.service.UserService
+import com.github.jingshouyan.sb40k.service.VerificationCodeService
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
@@ -22,6 +23,7 @@ class AuthController(
     private val userService: UserService,
     private val ticketService: TicketService,
     private val loginRecordService: LoginRecordService,
+    private val verificationCodeService: VerificationCodeService,
 ) {
 
     @RequestMapping("/ping")
@@ -58,6 +60,12 @@ class AuthController(
         return R.success(result)
     }
 
+
+    @PostMapping("/code")
+    fun code(@RequestBody req: CodeReq): R<String> {
+        val id = verificationCodeService.trigger(req.target, req.businessType)
+        return R.success(id)
+    }
 
     @PostMapping("/signup")
     fun signup(@RequestBody req: SignupReq): R<LoginResult> {
@@ -141,6 +149,11 @@ class AuthController(
 
 }
 
+
+data class CodeReq(
+    val target: String,
+    val businessType: String,
+)
 
 data class SigninReq(
     val account: String,

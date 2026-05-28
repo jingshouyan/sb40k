@@ -20,6 +20,10 @@ class BizConfig {
 
     var tokenSecret: String = "sb40k_abc1113"
 
+    var verificationCodeExpireMinutes: Long = 30
+
+    var verificationCodeResendIntervalSeconds: Long = 60
+
     var maskSettings = ConcurrentHashMap<String, Int>()
 
 
