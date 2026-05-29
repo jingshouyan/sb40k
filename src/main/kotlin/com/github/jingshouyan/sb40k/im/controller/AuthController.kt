@@ -1,8 +1,10 @@
 package com.github.jingshouyan.sb40k.im.controller
 
 import com.github.jingshouyan.sb40k.base.BizException
+import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.base.R
 import com.github.jingshouyan.sb40k.base.RC
+import java.util.UUID
 import com.github.jingshouyan.sb40k.entity.LoginRecord
 import com.github.jingshouyan.sb40k.entity.Ticket
 import com.github.jingshouyan.sb40k.entity.User
@@ -49,6 +51,28 @@ class AuthController(
         return R.success(processLogin(u, req.deviceInfo))
     }
 
+
+    @PostMapping("/code-login")
+    fun codeLogin(@RequestBody req: CodeLoginReq): R<LoginResult> {
+        val verified = verificationCodeService.verify(
+            req.codeId, req.code, req.account, req.idType, req.businessType
+        )
+        if (!verified) {
+            throw BizException(RC.PARAM_INVALID)
+        }
+        val optUser = userService.getUser(req.idType, req.account)
+        val u = optUser.orElseGet {
+            userService.addUser(
+                User(
+                    password = UUID.randomUUID().toString(),
+                    email = if (req.idType == C.ID_TYPE_EMAIL) req.account else null,
+                    phone = if (req.idType == C.ID_TYPE_PHONE) req.account else null,
+                    nickname = req.account,
+                )
+            )
+        }
+        return R.success(processLogin(u, req.deviceInfo))
+    }
 
     @PostMapping("/code")
     fun code(@RequestBody req: CodeReq): R<String> {
@@ -142,6 +166,15 @@ data class CodeReq(
     val businessType: String,
     val lang: String? = null,
     val params: Map<String, String>? = null,
+)
+
+data class CodeLoginReq(
+    val codeId: String,
+    val code: String,
+    val account: String,
+    val idType: Int,
+    val businessType: String,
+    val deviceInfo: DeviceInfo,
 )
 
 data class SigninReq(
