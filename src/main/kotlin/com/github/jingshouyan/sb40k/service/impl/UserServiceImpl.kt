@@ -1,6 +1,6 @@
 package com.github.jingshouyan.sb40k.service.impl
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
+import com.baomidou.mybatisplus.extension.kotlin.KtQueryWrapper
 import com.github.jingshouyan.sb40k.base.BizException
 import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.base.R
@@ -9,7 +9,6 @@ import com.github.jingshouyan.sb40k.config.BizConfig
 import com.github.jingshouyan.sb40k.entity.User
 import com.github.jingshouyan.sb40k.mapper.UserMapper
 import com.github.jingshouyan.sb40k.service.UserService
-import com.github.jingshouyan.sb40k.util.propCol
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -27,7 +26,8 @@ class UserServiceImpl(
 
         if (!user.username.isNullOrBlank()) {
             val existingByUsername = userMapper.selectOne(
-                QueryWrapper<User>().eq(propCol(User::username), user.username)
+
+                KtQueryWrapper(User::class.java).eq(User::username, user.username)
             )
             if (existingByUsername != null) {
                 throw BizException(RC.ALREADY_EXISTS, "username already exists")
@@ -37,7 +37,7 @@ class UserServiceImpl(
         // check email uniqueness
         if (!user.email.isNullOrBlank()) {
             val existingByEmail = userMapper.selectOne(
-                QueryWrapper<User>().eq(propCol(User::email), user.email)
+                KtQueryWrapper(User::class.java).eq(User::email, user.email)
             )
             if (existingByEmail != null) {
                 throw BizException(RC.ALREADY_EXISTS, "email already exists")
@@ -46,7 +46,7 @@ class UserServiceImpl(
         // check phone uniqueness
         if (!user.phone.isNullOrBlank()) {
             val existingByPhone = userMapper.selectOne(
-                QueryWrapper<User>().eq(propCol(User::phone), user.phone)
+                KtQueryWrapper(User::class.java).eq(User::phone, user.phone)
             )
             if (existingByPhone != null) {
                 throw BizException(RC.ALREADY_EXISTS, "phone already exists")
@@ -63,20 +63,20 @@ class UserServiceImpl(
         return when (idType) {
             C.ID_TYPE_USERNAME -> Optional.ofNullable(
                 userMapper.selectOne(
-                    QueryWrapper<User>().eq(propCol(User::username), id)
+                    KtQueryWrapper(User::class.java).eq(User::username, id)
                 )
             )
 
             C.ID_TYPE_USERID -> Optional.ofNullable(userMapper.selectById(id))
             C.ID_TYPE_EMAIL -> Optional.ofNullable(
                 userMapper.selectOne(
-                    QueryWrapper<User>().eq(propCol(User::email), id)
+                    KtQueryWrapper(User::class.java).eq(User::email, id)
                 )
             )
 
             C.ID_TYPE_PHONE -> Optional.ofNullable(
                 userMapper.selectOne(
-                    QueryWrapper<User>().eq(propCol(User::phone), id)
+                    KtQueryWrapper(User::class.java).eq(User::phone, id)
                 )
             )
 

@@ -1,9 +1,8 @@
 package com.github.jingshouyan.sb40k.service.impl
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
+import com.baomidou.mybatisplus.extension.kotlin.KtQueryWrapper
 import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.config.BizConfig
-import com.github.jingshouyan.sb40k.util.propCol
 import com.github.jingshouyan.sb40k.entity.VerificationCode
 import com.github.jingshouyan.sb40k.mapper.VerificationCodeMapper
 import com.github.jingshouyan.sb40k.service.VerificationCodeService
@@ -43,13 +42,13 @@ class VerificationCodeServiceImpl(
         val resendIntervalMs = cfg.verificationCodeResendIntervalSeconds * 1000
 
         val existing = verificationCodeMapper.selectOne(
-            QueryWrapper<VerificationCode>()
-                .eq(propCol(VerificationCode::account), account)
-                .eq(propCol(VerificationCode::idType), idType)
-                .eq(propCol(VerificationCode::businessType), businessType)
-                .isNull(propCol(VerificationCode::verifiedAt))
-                .gt(propCol(VerificationCode::expireAt), now)
-                .orderByDesc(propCol(VerificationCode::sentAt))
+            KtQueryWrapper(VerificationCode::class.java)
+                .eq(VerificationCode::account, account)
+                .eq(VerificationCode::idType, idType)
+                .eq(VerificationCode::businessType, businessType)
+                .isNull(VerificationCode::verifiedAt)
+                .gt(VerificationCode::expireAt, now)
+                .orderByDesc(VerificationCode::sentAt)
         )
 
         return if (existing != null) {
