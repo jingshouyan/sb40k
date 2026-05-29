@@ -3,6 +3,7 @@ package com.github.jingshouyan.sb40k.service.impl
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.config.BizConfig
+import com.github.jingshouyan.sb40k.util.propCol
 import com.github.jingshouyan.sb40k.entity.VerificationCode
 import com.github.jingshouyan.sb40k.mapper.VerificationCodeMapper
 import com.github.jingshouyan.sb40k.service.VerificationCodeService
@@ -43,12 +44,12 @@ class VerificationCodeServiceImpl(
 
         val existing = verificationCodeMapper.selectOne(
             QueryWrapper<VerificationCode>()
-                .eq("c_account", account)
-                .eq("c_id_type", idType)
-                .eq("c_business_type", businessType)
-                .isNull("c_verified_at")
-                .gt("c_expire_at", now)
-                .orderByDesc("c_sent_at")
+                .eq(propCol(VerificationCode::account), account)
+                .eq(propCol(VerificationCode::idType), idType)
+                .eq(propCol(VerificationCode::businessType), businessType)
+                .isNull(propCol(VerificationCode::verifiedAt))
+                .gt(propCol(VerificationCode::expireAt), now)
+                .orderByDesc(propCol(VerificationCode::sentAt))
         )
 
         return if (existing != null) {

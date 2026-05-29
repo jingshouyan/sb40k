@@ -9,6 +9,7 @@ import com.github.jingshouyan.sb40k.config.BizConfig
 import com.github.jingshouyan.sb40k.entity.User
 import com.github.jingshouyan.sb40k.mapper.UserMapper
 import com.github.jingshouyan.sb40k.service.UserService
+import com.github.jingshouyan.sb40k.util.propCol
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -26,7 +27,7 @@ class UserServiceImpl(
 
         if (!user.username.isNullOrBlank()) {
             val existingByUsername = userMapper.selectOne(
-                QueryWrapper<User>().eq("c_username", user.username)
+                QueryWrapper<User>().eq(propCol(User::username), user.username)
             )
             if (existingByUsername != null) {
                 throw BizException(RC.ALREADY_EXISTS, "username already exists")
@@ -36,7 +37,7 @@ class UserServiceImpl(
         // check email uniqueness
         if (!user.email.isNullOrBlank()) {
             val existingByEmail = userMapper.selectOne(
-                QueryWrapper<User>().eq("c_email", user.email)
+                QueryWrapper<User>().eq(propCol(User::email), user.email)
             )
             if (existingByEmail != null) {
                 throw BizException(RC.ALREADY_EXISTS, "email already exists")
@@ -45,7 +46,7 @@ class UserServiceImpl(
         // check phone uniqueness
         if (!user.phone.isNullOrBlank()) {
             val existingByPhone = userMapper.selectOne(
-                QueryWrapper<User>().eq("c_phone", user.phone)
+                QueryWrapper<User>().eq(propCol(User::phone), user.phone)
             )
             if (existingByPhone != null) {
                 throw BizException(RC.ALREADY_EXISTS, "phone already exists")
@@ -62,20 +63,20 @@ class UserServiceImpl(
         return when (idType) {
             C.ID_TYPE_USERNAME -> Optional.ofNullable(
                 userMapper.selectOne(
-                    QueryWrapper<User>().eq("c_username", id)
+                    QueryWrapper<User>().eq(propCol(User::username), id)
                 )
             )
 
             C.ID_TYPE_USERID -> Optional.ofNullable(userMapper.selectById(id))
             C.ID_TYPE_EMAIL -> Optional.ofNullable(
                 userMapper.selectOne(
-                    QueryWrapper<User>().eq("c_email", id)
+                    QueryWrapper<User>().eq(propCol(User::email), id)
                 )
             )
 
             C.ID_TYPE_PHONE -> Optional.ofNullable(
                 userMapper.selectOne(
-                    QueryWrapper<User>().eq("c_phone", id)
+                    QueryWrapper<User>().eq(propCol(User::phone), id)
                 )
             )
 
