@@ -4,7 +4,6 @@ import com.github.jingshouyan.sb40k.base.BizException
 import com.github.jingshouyan.sb40k.base.C
 import com.github.jingshouyan.sb40k.base.R
 import com.github.jingshouyan.sb40k.base.RC
-import java.util.UUID
 import com.github.jingshouyan.sb40k.entity.LoginRecord
 import com.github.jingshouyan.sb40k.entity.Ticket
 import com.github.jingshouyan.sb40k.entity.User
@@ -17,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import java.util.*
 
 
 @RestController
@@ -35,7 +35,7 @@ class AuthController(
     }
 
     @PostMapping("/signin")
-    fun signin(@RequestBody req: SigninReq): R<LoginResult> {
+    fun login(@RequestBody req: LoginReq): R<LoginResult> {
         val optUser = userService.getUser(req.idType, req.account);
         if (optUser.isEmpty) {
             throw BizException(RC.NOT_FOUND)
@@ -55,7 +55,7 @@ class AuthController(
     @PostMapping("/code-login")
     fun codeLogin(@RequestBody req: CodeLoginReq): R<LoginResult> {
         val verified = verificationCodeService.verify(
-            req.codeId, req.code, req.account, req.idType, req.businessType
+            req.codeId, req.code, req.account, req.idType, C.VC_BIZ_TYPE_LOGIN
         )
         if (!verified) {
             throw BizException(RC.PARAM_INVALID)
@@ -173,11 +173,10 @@ data class CodeLoginReq(
     val code: String,
     val account: String,
     val idType: Int,
-    val businessType: String,
     val deviceInfo: DeviceInfo,
 )
 
-data class SigninReq(
+data class LoginReq(
     val account: String,
     val idType: Int,
     val password: String,
