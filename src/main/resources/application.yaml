@@ -3,12 +3,27 @@ spring:
     name: sb40k
 
   datasource:
-    url: jdbc:mysql://localhost:3306/sb40db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/sb40db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&allowMultiQueries=true
     username: root
     password: abcd1234
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
+
+  mail:
+    host: smtphz.qiye.163.com
+    port: 465
+    protocol: smtp
+    username: jingshouyan@vrvmail.com.cn
+    password: Vrv@6722913
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+
 
   security:
     enable: false
@@ -32,18 +47,7 @@ server:
   forward-headers-strategy: framework
 
 
-spring:
-  mail:
-    host: smtp.example.com
-    port: 587
-    username: noreply@example.com
-    password: your-password
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+
 
 logging:
   level:

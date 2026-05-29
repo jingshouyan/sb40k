@@ -18,7 +18,12 @@ class JsonMapTypeHandler : BaseTypeHandler<Map<String, String>?>() {
 
     private val typeRef = object : TypeReference<Map<String, String>>() {}
 
-    override fun setNonNullParameter(ps: PreparedStatement, i: Int, parameter: Map<String, String>?, jdbcType: JdbcType) {
+    override fun setNonNullParameter(
+        ps: PreparedStatement,
+        i: Int,
+        parameter: Map<String, String>?,
+        jdbcType: JdbcType?
+    ) {
         ps.setString(i, if (parameter == null) null else mapper.writeValueAsString(parameter))
     }
 

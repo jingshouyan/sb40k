@@ -24,7 +24,7 @@ class MybatisPlusConfig {
     }
 
     @Bean
-    fun identifierGenerator(@Value("\${biz.snowflake-worker-id:0}") workerId: Long): IdentifierGenerator {
+    fun identifierGenerator(@Value($$"${biz.snowflake-worker-id:0}") workerId: Long): IdentifierGenerator {
         return SnowflakeIdGenerator(workerId)
     }
 }

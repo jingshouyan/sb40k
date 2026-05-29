@@ -49,6 +49,7 @@ dependencies {
     implementation("com.corundumstudio.socketio:netty-socketio:2.0.13")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
     implementation("org.springframework.boot:spring-boot-starter-mail")
+    implementation("org.springframework:spring-context-support")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.projectlombok:lombok")
