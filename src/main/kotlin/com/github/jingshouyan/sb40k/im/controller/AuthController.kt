@@ -46,18 +46,7 @@ class AuthController(
             throw BizException(r.code, r.data)
         }
 
-        val ticket = Ticket(
-            u.id ?: "",
-            req.deviceInfo.deviceType,
-            System.currentTimeMillis(),
-            req.deviceInfo.deviceId,
-            ""
-        )
-        val result = result(ticket, u)
-
-        saveLoginRecord(u.id ?: "", ticket.token, RC.SUCCESS, req.deviceInfo)
-
-        return R.success(result)
+        return R.success(processLogin(u, req.deviceInfo))
     }
 
 
@@ -77,23 +66,30 @@ class AuthController(
         )
         val newUser = userService.addUser(u)
 
-        val ticket = Ticket(
-            newUser.id ?: "",
-            req.deviceInfo.deviceType,
-            System.currentTimeMillis(),
-            req.deviceInfo.deviceId,
-            ""
-        )
-
-        val result = result(ticket, newUser)
-        saveLoginRecord(newUser.id ?: "", ticket.token, RC.SUCCESS, req.deviceInfo)
-        return R.success(result)
+        return R.success(processLogin(u, req.deviceInfo))
     }
 
-    private fun result(
-        ticket: Ticket,
-        u: User
+
+    @GetMapping("/singout")
+    fun signout(): R<Any?> {
+        val ticket = SecurityContextHolder.getContext().authentication?.principal as Ticket
+        ticketService.removeTicket(ticket)
+
+        loginRecordService.logoutToken(ticket.token)
+        return R.success()
+    }
+
+    private fun processLogin(
+        u: User,
+        deviceInfo: DeviceInfo
     ): LoginResult {
+        val ticket = Ticket(
+            u.id ?: "",
+            deviceInfo.deviceType,
+            System.currentTimeMillis(),
+            deviceInfo.deviceId,
+            ""
+        )
         val token = ticketService.saveTicket(ticket)
 
         val authentication = UsernamePasswordAuthenticationToken(
@@ -103,19 +99,9 @@ class AuthController(
         )
         SecurityContextHolder.getContext().authentication = authentication
 
-        return LoginResult(
-            ticket = ticket,
-            user = u,
-        )
-    }
+        saveLoginRecord(u.id ?: "", ticket.token, RC.SUCCESS, deviceInfo)
 
-    @GetMapping("/singout")
-    fun signout(): R<Any?> {
-        val ticket = SecurityContextHolder.getContext().authentication?.principal as Ticket
-        ticketService.removeTicket(ticket)
-
-        loginRecordService.logoutToken(ticket.token)
-        return R.success()
+        return LoginResult(ticket, u)
     }
 
     private fun saveLoginRecord(userId: String, token: String, resultCode: Int, deviceInfo: DeviceInfo) {

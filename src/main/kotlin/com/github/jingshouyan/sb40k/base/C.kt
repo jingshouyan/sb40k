@@ -8,4 +8,6 @@ object C {
 
     const val LANGUAGE_ZH_CN = "zh_CN"
     const val LANGUAGE_EN = "en"
+
+    const val VC_BIZ_TYPE_SIGNIN = "signin"
 }
