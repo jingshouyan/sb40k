@@ -27,7 +27,7 @@ class MyMetaObjectHandler : MetaObjectHandler {
 
     private fun getCurrentUserId(): String {
         val authentication = SecurityContextHolder.getContext().authentication
-        val ticket = authentication?.principal as? Ticket ?: return "system"
+        val ticket = authentication?.principal as? Ticket ?: return "anonymous"
         return ticket.userId
     }
 }
