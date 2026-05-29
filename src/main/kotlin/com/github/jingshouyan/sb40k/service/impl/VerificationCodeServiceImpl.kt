@@ -13,18 +13,26 @@ import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import org.springframework.beans.factory.DisposableBean
+import kotlinx.coroutines.cancel
 
 @Service
 class VerificationCodeServiceImpl(
     private val verificationCodeMapper: VerificationCodeMapper,
     private val cfg: BizConfig,
     private val mailSender: JavaMailSender,
-) : VerificationCodeService {
+) : VerificationCodeService, DisposableBean {
 
     @Value($$"${spring.mail.username:}")
     private var fromEmail: String? = null
 
     private val log = LoggerFactory.getLogger(VerificationCodeServiceImpl::class.java)
+
+    private val emailScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun trigger(
         account: String,
@@ -106,6 +114,10 @@ class VerificationCodeServiceImpl(
         }
     }
 
+    override fun destroy() {
+        emailScope.cancel()
+    }
+
     private fun sendEmail(vc: VerificationCode) {
         val serial = vc.id?.takeLast(4) ?: "????"
         val subject = when {
@@ -113,18 +125,20 @@ class VerificationCodeServiceImpl(
             else -> "Verification Code"
         }
         val html = buildEmailHtml(vc.code, vc.lang, serial)
-        try {
-            val msg = mailSender.createMimeMessage()
-            MimeMessageHelper(msg, true).apply {
-                setTo(vc.account)
-                setSubject(subject)
-                setText(html, true) // true = HTML
-                fromEmail?.let { setFrom(it) }
+        emailScope.launch {
+            try {
+                val msg = mailSender.createMimeMessage()
+                MimeMessageHelper(msg, true).apply {
+                    setTo(vc.account)
+                    setSubject(subject)
+                    setText(html, true)
+                    fromEmail?.let { setFrom(it) }
+                }
+                mailSender.send(msg)
+                log.info("[EMAIL SENT] id = {} success", vc.id)
+            } catch (e: Exception) {
+                log.error("[EMAIL SENT] id = {} fail", vc.id, e)
             }
-            mailSender.send(msg)
-            log.info("[EMAIL SENT] id = {} success", vc.id)
-        } catch (e: Exception) {
-            log.error("[EMAIL SENT] id = {} fail", vc.id, e)
         }
     }
 

@@ -55,6 +55,7 @@ dependencies {
     implementation("org.springframework:spring-context-support")
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("com.lmax:disruptor:4.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
