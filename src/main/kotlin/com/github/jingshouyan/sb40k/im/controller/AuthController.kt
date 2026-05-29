@@ -76,7 +76,8 @@ class AuthController(
 
     @PostMapping("/code")
     fun code(@RequestBody req: CodeReq): R<String> {
-        val id = verificationCodeService.trigger(req.account, req.idType, req.businessType, req.lang, req.params)
+        val id =
+            verificationCodeService.trigger(req.account, req.idType, req.businessType.uppercase(), req.lang, req.params)
         return R.success(id)
     }
 
@@ -90,7 +91,7 @@ class AuthController(
         )
         val newUser = userService.addUser(u)
 
-        return R.success(processLogin(u, req.deviceInfo))
+        return R.success(processLogin(newUser, req.deviceInfo))
     }
 
 
