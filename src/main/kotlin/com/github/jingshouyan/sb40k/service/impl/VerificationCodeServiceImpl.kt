@@ -6,19 +6,15 @@ import com.github.jingshouyan.sb40k.config.BizConfig
 import com.github.jingshouyan.sb40k.entity.VerificationCode
 import com.github.jingshouyan.sb40k.mapper.VerificationCodeMapper
 import com.github.jingshouyan.sb40k.service.VerificationCodeService
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.ClassPathResource
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import org.springframework.beans.factory.DisposableBean
-import kotlinx.coroutines.cancel
 
 @Service
 class VerificationCodeServiceImpl(
@@ -88,12 +84,16 @@ class VerificationCodeServiceImpl(
         }
     }
 
-    override fun verify(id: String, code: String): Boolean {
+    override fun verify(id: String, code: String, account: String, idType: Int, businessType: String): Boolean {
         val now = System.currentTimeMillis()
         val vc = verificationCodeMapper.selectById(id) ?: return false
         if (vc.code != code) return false
         if (vc.expireAt <= now) return false
         if (vc.verifiedAt != null) return false
+
+        if (vc.account != account) return false
+        if (vc.idType != idType) return false
+        if (vc.businessType != businessType) return false
 
         vc.verifiedAt = now
         verificationCodeMapper.updateById(vc)
@@ -157,8 +157,10 @@ class VerificationCodeServiceImpl(
         val expireLabel = if (isZh) "有效期" else "Valid for"
         val minUnit = if (isZh) "分钟" else "minutes"
         val idLabel = if (isZh) "编号" else "ID"
-        val ignoreMsg = if (isZh) "如果您没有请求此验证码，请忽略此邮件。" else "If you did not request this code, please ignore this email."
-        val footer = if (isZh) "此邮件由系统自动发送，请勿回复。" else "This is an automated message, please do not reply."
+        val ignoreMsg =
+            if (isZh) "如果您没有请求此验证码，请忽略此邮件。" else "If you did not request this code, please ignore this email."
+        val footer =
+            if (isZh) "此邮件由系统自动发送，请勿回复。" else "This is an automated message, please do not reply."
 
         return EMAIL_TEMPLATE
             .replace("{title}", title)
