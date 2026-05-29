@@ -40,18 +40,11 @@ mybatis-plus:
       id-type: auto
   configuration:
     map-underscore-to-camel-case: true
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
 server:
   port: 8081
   forward-headers-strategy: framework
 
-
-
-
-logging:
-  level:
-    com.github.jingshouyan.sb40k.mapper: debug
 
 socketio:
   port: 8080
@@ -62,5 +55,7 @@ biz:
     username: 22
     password: 11
     email: 33
+    account: 33
+    phone: 33
 
 kind: Application

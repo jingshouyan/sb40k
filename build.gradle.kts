@@ -25,6 +25,9 @@ configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
     }
+    all {
+        exclude("org.springframework.boot", "spring-boot-starter-logging")
+    }
 }
 
 repositories {
@@ -50,6 +53,8 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.springframework:spring-context-support")
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    implementation("com.lmax:disruptor:4.0.0")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("tools.jackson.module:jackson-module-kotlin")
     implementation("org.projectlombok:lombok")
