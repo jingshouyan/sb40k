@@ -8,8 +8,8 @@ import com.github.jingshouyan.sb40k.mapper.VerificationCodeMapper
 import com.github.jingshouyan.sb40k.service.VerificationCodeService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 
 @Service
@@ -110,21 +110,57 @@ class VerificationCodeServiceImpl(
             vc.lang?.startsWith("zh") == true -> "验证码"
             else -> "Verification Code"
         }
-        val text = when {
-            vc.lang?.startsWith("zh") == true -> "您的验证码是：${vc.code}，有效期 ${cfg.verificationCodeExpireMinutes} 分钟。（编号：$serial）"
-            else -> "Your verification code is: ${vc.code}, valid for ${cfg.verificationCodeExpireMinutes} minutes. (ID: $serial)"
-        }
+        val html = buildEmailHtml(vc.code, vc.lang, serial)
         try {
-            val msg = SimpleMailMessage().apply {
+            val msg = mailSender.createMimeMessage()
+            MimeMessageHelper(msg, true).apply {
                 setTo(vc.account)
                 setSubject(subject)
-                setText(text)
-                from = fromEmail
+                setText(html, true) // true = HTML
+                fromEmail?.let { setFrom(it) }
             }
             mailSender.send(msg)
             log.info("[EMAIL SENT] id = {} success", vc.id)
         } catch (e: Exception) {
             log.error("[EMAIL SENT] id = {} fail", vc.id, e)
         }
+    }
+
+    private fun buildEmailHtml(code: String, lang: String?, serial: String): String {
+        val isZh = lang?.startsWith("zh") == true
+        val title = if (isZh) "验证码" else "Verification Code"
+        val codeLabel = if (isZh) "您的验证码" else "Your Code"
+        val expireLabel = if (isZh) "有效期" else "Valid for"
+        val min = if (isZh) "分钟" else "minutes"
+        val idLabel = if (isZh) "编号" else "ID"
+        val ignoreMsg = if (isZh) "如果您没有请求此验证码，请忽略此邮件。" else "If you did not request this code, please ignore this email."
+        val footer = if (isZh) "此邮件由系统自动发送，请勿回复。" else "This is an automated message, please do not reply."
+
+        return """<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#f4f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f5f7;padding:24px 0">
+<tr><td align="center">
+<table width="480" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
+<tr><td style="background:linear-gradient(135deg,#667eea,#764ba2);padding:32px 24px;text-align:center">
+<h1 style="margin:0;color:#ffffff;font-size:22px;font-weight:600">$title</h1>
+</td></tr>
+<tr><td style="padding:40px 24px;text-align:center">
+<p style="margin:0 0 8px;color:#6b7280;font-size:14px">$codeLabel</p>
+<div style="display:inline-block;margin:16px 0;padding:16px 40px;background:#f0f4ff;border-radius:8px;letter-spacing:8px;font-size:36px;font-weight:700;color:#667eea;font-family:monospace">${code}</div>
+<p style="margin:16px 0 0;color:#9ca3af;font-size:13px">$expireLabel ${cfg.verificationCodeExpireMinutes} $min ｜ $idLabel $serial</p>
+</td></tr>
+<tr><td style="padding:0 24px 24px;text-align:center">
+<p style="margin:0;color:#d1d5db;font-size:12px;line-height:1.6">$ignoreMsg<br>$footer</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
     }
 }
