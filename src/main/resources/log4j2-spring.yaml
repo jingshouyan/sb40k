@@ -7,7 +7,7 @@ Configuration:
       name: Console
       target: SYSTEM_OUT
       ThresholdFilter:
-        level: warn
+      #        level: warn
       PatternLayout:
         pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %c{1.} - %msg%n"
 
@@ -18,7 +18,7 @@ Configuration:
       PatternLayout:
         pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%t] %c{1.} - %msg%n"
       Policies:
-        TimeBasedTriggeringPolicy: {}
+        TimeBasedTriggeringPolicy: { }
         SizeBasedTriggeringPolicy:
           size: 100 MB
       DefaultRolloverStrategy:
